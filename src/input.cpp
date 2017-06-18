@@ -27,35 +27,10 @@
 #include "netplay.h"
 #include "movie.h"
 #include "state.h"
-#include "input/zapper.h"
 #include "input.h"
 #include "vsuni.h"
 #include "fds.h"
 #include "driver.h"
-
-//it is easier to declare these input drivers extern here than include a bunch of files
-//-------------
-extern INPUTC *FCEU_InitZapper(int w);
-extern INPUTC *FCEU_InitPowerpadA(int w);
-extern INPUTC *FCEU_InitPowerpadB(int w);
-extern INPUTC *FCEU_InitArkanoid(int w);
-extern INPUTC *FCEU_InitMouse(int w);
-extern INPUTC *FCEU_InitSNESMouse(int w);
-
-extern INPUTCFC *FCEU_InitArkanoidFC(void);
-extern INPUTCFC *FCEU_InitSpaceShadow(void);
-extern INPUTCFC *FCEU_InitFKB(void);
-extern INPUTCFC *FCEU_InitSuborKB(void);
-extern INPUTCFC *FCEU_InitPEC586KB(void);
-extern INPUTCFC *FCEU_InitHS(void);
-extern INPUTCFC *FCEU_InitMahjong(void);
-extern INPUTCFC *FCEU_InitQuizKing(void);
-extern INPUTCFC *FCEU_InitFamilyTrainerA(void);
-extern INPUTCFC *FCEU_InitFamilyTrainerB(void);
-extern INPUTCFC *FCEU_InitOekaKids(void);
-extern INPUTCFC *FCEU_InitTopRider(void);
-extern INPUTCFC *FCEU_InitBarcodeWorld(void);
-//---------------
 
 //global lag variables
 unsigned int lagCounter;
@@ -423,24 +398,6 @@ static void SetInputStuff(int port)
 	case SI_SNES:
 		joyports[port].driver= &GPSNES;
 		break;
-	case SI_ARKANOID:
-		joyports[port].driver=FCEU_InitArkanoid(port);
-		break;
-	case SI_ZAPPER:
-		joyports[port].driver=FCEU_InitZapper(port);
-		break;
-	case SI_POWERPADA:
-		joyports[port].driver=FCEU_InitPowerpadA(port);
-		break;
-	case SI_POWERPADB:
-		joyports[port].driver=FCEU_InitPowerpadB(port);
-		break;
-	case SI_MOUSE:
-		joyports[port].driver=FCEU_InitMouse(port);
-		break;
-	case SI_SNES_MOUSE:
-		joyports[port].driver=FCEU_InitSNESMouse(port);
-		break;
 	case SI_NONE:
 		joyports[port].driver=&DummyJPort;
 		break;
@@ -454,48 +411,9 @@ static void SetInputStuffFC()
 	case SIFC_NONE:
 		portFC.driver=&DummyPortFC;
 		break;
-	case SIFC_ARKANOID:
-		portFC.driver=FCEU_InitArkanoidFC();
-		break;
-	case SIFC_SHADOW:
-		portFC.driver=FCEU_InitSpaceShadow();
-		break;
-	case SIFC_OEKAKIDS:
-		portFC.driver=FCEU_InitOekaKids();
-		break;
 	case SIFC_4PLAYER:
 		portFC.driver=&FAMI4C;
 		memset(&F4ReadBit,0,sizeof(F4ReadBit));
-		break;
-	case SIFC_FKB:
-		portFC.driver=FCEU_InitFKB();
-		break;
-	case SIFC_SUBORKB:
-		portFC.driver=FCEU_InitSuborKB();
-		break;
-	case SIFC_PEC586KB:
-		portFC.driver=FCEU_InitPEC586KB();
-		break;
-	case SIFC_HYPERSHOT:
-		portFC.driver=FCEU_InitHS();
-		break;
-	case SIFC_MAHJONG:
-		portFC.driver=FCEU_InitMahjong();
-		break;
-	case SIFC_QUIZKING:
-		portFC.driver=FCEU_InitQuizKing();
-		break;
-	case SIFC_FTRAINERA:
-		portFC.driver=FCEU_InitFamilyTrainerA();
-		break;
-	case SIFC_FTRAINERB:
-		portFC.driver=FCEU_InitFamilyTrainerB();
-		break;
-	case SIFC_BWORLD:
-		portFC.driver=FCEU_InitBarcodeWorld();
-		break;
-	case SIFC_TOPRIDER:
-		portFC.driver=FCEU_InitTopRider();
 		break;
 	}
 }
@@ -554,14 +472,10 @@ void FCEUI_SetInputFourscore(bool attachFourscore)
 	FSAttached = attachFourscore;
 }
 
-//mbg 6/18/08 HACK
-extern ZAPPER ZD[2];
 SFORMAT FCEUCTRL_STATEINFO[]={
 	{ joy_readbit,	2, "JYRB"},
 	{ joy,			4, "JOYS"},
 	{ &LastStrobe,	1, "LSTS"},
-	{ &ZD[0].bogo,	1, "ZBG0"},
-	{ &ZD[1].bogo,	1, "ZBG1"},
 	{ &lagFlag,		1, "LAGF"},
 	{ &lagCounter,	4, "LAGC"},
 	{ &currFrameCounter, 4, "FRAM"},
