@@ -196,7 +196,6 @@ else:
 
 Export('env')
 fceux = SConscript('src/SConscript')
-env.Program(target="fceux-net-server", source=["fceux-server/server.cpp", "fceux-server/md5.cpp", "fceux-server/throttle.cpp"])
 
 # Installation rules
 if prefix == None:
@@ -209,22 +208,13 @@ if env['PLATFORM'] == 'win32':
 fceux_src = 'src/fceux' + exe_suffix
 fceux_dst = 'bin/fceux' + exe_suffix
 
-fceux_net_server_src = 'fceux-net-server' + exe_suffix
-fceux_net_server_dst = 'bin/fceux-net-server' + exe_suffix
-
 auxlib_src = 'src/auxlib.lua'
 auxlib_dst = 'bin/auxlib.lua'
 
-fceux_h_src = 'output/fceux.chm'
-fceux_h_dst = 'bin/fceux.chm'
-
-env.Command(fceux_h_dst, fceux_h_src, [Copy(fceux_h_dst, fceux_h_src)])
 env.Command(fceux_dst, fceux_src, [Copy(fceux_dst, fceux_src)])
-env.Command(fceux_net_server_dst, fceux_net_server_src, [Copy(fceux_net_server_dst, fceux_net_server_src)])
 env.Command(auxlib_dst, auxlib_src, [Copy(auxlib_dst, auxlib_src)])
 
 man_src = 'documentation/fceux.6'
-man_net_src = 'documentation/fceux-net-server.6'
 
 share_src = 'output/'
 
@@ -232,10 +222,10 @@ image_src = 'fceux.png'
 
 desktop_src = 'fceux.desktop'
 
-env.Install(prefix + "/bin/", [fceux, fceux_net_server_src])
+env.Install(prefix + "/bin/", [fceux])
 env.InstallAs(prefix + '/share/fceux/', share_src)
 env.Install(prefix + '/share/fceux/', auxlib_src)
 env.Install(prefix + '/share/pixmaps/', image_src)
 env.Install(prefix + '/share/applications/', desktop_src)
-env.Install(prefix + "/share/man/man6/", [man_src, man_net_src])
+env.Install(prefix + "/share/man/man6/", [man_src])
 env.Alias('install', prefix)
