@@ -13,9 +13,6 @@
 #include "movie.h"
 #include "fds.h"
 #include "vsuni.h"
-#ifdef _S9XLUA_H
-#include "fceulua.h"
-#endif
 #include "utils/guid.h"
 #include "utils/memory.h"
 #include "utils/xstring.h"
@@ -23,15 +20,6 @@
 
 #ifdef CREATE_AVI
 #include "drivers/videolog/nesvideos-piece.h"
-#endif
-
-#ifdef WIN32
-#include <windows.h>
-#include "./drivers/win/common.h"
-#include "./drivers/win/window.h"
-extern void AddRecentMovieFile(const char *filename);
-#include "./drivers/win/taseditor.h"
-extern bool mustEngageTaseditor;
 #endif
 
 #include <cstdio>
@@ -761,10 +749,6 @@ void FCEUI_StopMovie()
 	curMovieFilename[0] = 0;			//No longer a current movie filename
 	freshMovie = false;					//No longer a fresh movie loaded
 	if (bindSavestate) AutoSS = false;	//If bind movies to savestates is true, then there is no longer a valid auto-save to load
-
-#ifdef WIN32
-	SetMainWindowText();
-#endif
 }
 
 void poweron(bool shouldDisableBatteryLoading)
@@ -858,18 +842,6 @@ bool FCEUI_LoadMovie(const char *fname, bool _read_only, int _pauseframe)
 		return true;	//adelikat: file did not fail to load, so return true (false is only for file not exist/unable to open errors
 	}
 
-#ifdef WIN32
-	//Fix relative path if necessary and then add to the recent movie menu
-	extern std::string BaseDirectory;
-
-	string name = fname;
-	if (IsRelativePath(fname))
-	{
-		name = ConvertRelativePath(name);
-	}
-	AddRecentMovieFile(name.c_str());
-#endif
-
 	LoadFM2(currMovieData, fp->stream, fp->size, false);
 	LoadSubtitles(currMovieData);
 	delete fp;
@@ -912,10 +884,6 @@ bool FCEUI_LoadMovie(const char *fname, bool _read_only, int _pauseframe)
 	else
 		FCEU_DispMessage("Replay started Read+Write.",0);
 
-#ifdef WIN32
-	SetMainWindowText();
-#endif
-
 	#ifdef CREATE_AVI
 	if(LoggingEnabled)
 	{
@@ -933,10 +901,6 @@ static void openRecordingMovie(const char* fname)
 	if(!osRecordingMovie)
 		FCEU_PrintError("Error opening movie output file: %s",fname);
 	strcpy(curMovieFilename, fname);
-#ifdef WIN32
-	//Add to the recent movie menu
-	AddRecentMovieFile(fname);
-#endif
 }
 
 
@@ -1197,13 +1161,7 @@ bool FCEUMOV_ReadState(EMUFILE* is, uint32 size)
 	{
 		if (currMovieData.loadFrameCount >= 0)
 		{
-#ifdef WIN32
-			int result = MessageBox(hAppWnd, "This movie is a TAS Editor project file.\nIt can be modified in TAS Editor only.\n\nOpen it in TAS Editor now?", "Movie Replay", MB_YESNO);
-			if (result == IDYES)
-				mustEngageTaseditor = true;
-#else
 			FCEUI_printf("This movie is a TAS Editor project file! It can be modified in TAS Editor only.\nMovie is now Read-Only.\n");
-#endif
 			movie_readonly = true;
 		}
 		if (FCEU_isFileInArchive(curMovieFilename))
@@ -1285,21 +1243,6 @@ bool FCEUMOV_ReadState(EMUFILE* is, uint32 size)
 		if(tempMovieData.guid != currMovieData.guid)
 		{
 			//mbg 8/18/08 - this code  can be used to turn the error message into an OK/CANCEL
-			#ifdef WIN32
-				std::string msg = "There is a mismatch between savestate's movie and current movie.\ncurrent: " + currMovieData.guid.toString() + "\nsavestate: " + tempMovieData.guid.toString() + "\n\nThis means that you have loaded a savestate belonging to a different movie than the one you are playing now.\n\nContinue loading this savestate anyway?";
-				extern HWND pwindow;
-				int result = MessageBox(pwindow,msg.c_str(),"Error loading savestate",MB_OKCANCEL);
-				if(result == IDCANCEL)
-				{
-					if (!backupSavestates) //If backups are disabled we can just resume normally since we can't restore so stop movie and inform user
-					{
-						FCEU_PrintError("Unable to restore backup, movie playback stopped.");
-						FCEUI_StopMovie();
-					}
-
-					return false;
-				}
-			#else
 				if (!backupSavestates) //If backups are disabled we can just resume normally since we can't restore so stop movie and inform user
 				{
 					FCEU_PrintError("Mismatch between savestate's movie and current movie.\ncurrent: %s\nsavestate: %s\nUnable to restore backup, movie playback stopped.\n",currMovieData.guid.toString().c_str(),tempMovieData.guid.toString().c_str());
@@ -1309,7 +1252,6 @@ bool FCEUMOV_ReadState(EMUFILE* is, uint32 size)
 				FCEU_PrintError("Mismatch between savestate's movie and current movie.\ncurrent: %s\nsavestate: %s\n",currMovieData.guid.toString().c_str(),tempMovieData.guid.toString().c_str());
 
 				return false;
-			#endif
 		}
 
 		closeRecordingMovie();
@@ -1410,18 +1352,10 @@ bool FCEUMOV_PostLoad(void)
 
 void FCEUMOV_IncrementRerecordCount()
 {
-#ifdef _S9XLUA_H
-	if(!FCEU_LuaRerecordCountSkip())
-		if (movieMode != MOVIEMODE_TASEDITOR)
-			currRerecordCount++;
-		else
-			currMovieData.rerecordCount++;
-#else
 	if (movieMode != MOVIEMODE_TASEDITOR)
 		currRerecordCount++;
 	else
 		currMovieData.rerecordCount++;
-#endif
 	if (movieMode != MOVIEMODE_TASEDITOR)
 		currMovieData.rerecordCount = currRerecordCount;
 }
@@ -1515,9 +1449,6 @@ void FCEUI_MoviePlayFromBeginning(void)
 {
 	if (movieMode == MOVIEMODE_TASEDITOR)
 	{
-#ifdef WIN32
-		handleEmuCmdByTaseditor(EMUCMD_MOVIE_PLAY_FROM_BEGINNING);
-#endif
 	} else if (movieMode != MOVIEMODE_INACTIVE)
 	{
 		if (currMovieData.savestate.empty())
@@ -1542,9 +1473,6 @@ void FCEUI_MoviePlayFromBeginning(void)
 			//currMovieData.loadSavestateFrom(&currMovieData.savestate); //TODO: make something like this work instead so it doesn't have to reload
 		}
 	}
-#ifdef WIN32
-	SetMainWindowText();
-#endif
 }
 
 string FCEUI_GetMovieName(void)

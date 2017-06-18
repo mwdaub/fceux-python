@@ -11,10 +11,6 @@
 #include "sdl-video.h"
 #include "unix-netplay.h"
 
-#ifdef WIN32
-#include <windows.h>
-#endif
-
 #include <unistd.h>
 
 #include <csignal>
@@ -94,20 +90,7 @@ GetBaseDirectory(std::string &dir)
 	if(home) {
 		dir = std::string(home) + "/.fceux";
 	} else {
-#ifdef WIN32
-		home = new char[MAX_PATH + 1];
-		GetModuleFileName(NULL, home, MAX_PATH + 1);
-
-		char *lastBS = strrchr(home,'\\');
-		if(lastBS) {
-			*lastBS = 0;
-		}
-
-		dir = std::string(home);
-		delete[] home;
-#else
 		dir = "";
-#endif
 	}
 }
 
@@ -227,11 +210,6 @@ InitConfig()
 	config->addOption("fourscore", "SDL.FourScore", 0);
 
 	config->addOption("nofscursor", "SDL.NoFullscreenCursor", 1);
-    
-    #ifdef _S9XLUA_H
-	// load lua script
-	config->addOption("loadlua", "SDL.LuaScript", "");
-    #endif
     
     #ifdef CREATE_AVI
 	config->addOption("videolog",  "SDL.VideoLog",  "");

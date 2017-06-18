@@ -204,15 +204,6 @@ char *GetKeyboard(void)
  return((char *)KeyState);
 }
 
-#ifdef WIN32
-#include <windows.h>
-
- /* Stupid SDL */
- #ifdef main
- #undef main
- #endif
-#endif
-
 #ifndef EXTGUI
 uint8 *GetBaseDirectory(void)
 {
@@ -229,19 +220,8 @@ uint8 *GetBaseDirectory(void)
  }
  else
  {
-  #ifdef WIN32
-  char *sa;
-
-  ret=malloc(MAX_PATH+1);
-  GetModuleFileName(NULL,ret,MAX_PATH+1);
-
-  sa=strrchr(ret,'\\');
-  if(sa)
-   *sa = 0; 
-  #else
   ret=malloc(1);
   ret[0]=0;
-  #endif
   printf("%s\n",ret);
  }
  return(ret);
@@ -369,11 +349,6 @@ int main(int argc, char *argv[])
 #endif
 {
         FCEUD_Message("\nStarting FCE Ultra "FCEU_VERSION"...\n");
-
-        #ifdef WIN32
-        /* Taken from win32 sdl_main.c */
-        SDL_SetModuleHandle(GetModuleHandle(NULL));
-        #endif
 
 	if(SDL_Init(SDL_INIT_VIDEO)) /* SDL_INIT_VIDEO Needed for (joystick config) event processing? */
 	{

@@ -6,9 +6,6 @@
 #include "../../fceu.h"
 #include "../../movie.h"
 #include "../../version.h"
-#ifdef _S9XLUA_H
-#include "../../fceulua.h"
-#endif
 
 #include "input.h"
 #include "dface.h"
@@ -23,10 +20,6 @@
 
 #ifdef CREATE_AVI
 #include "../videolog/nesvideos-piece.h"
-#endif
-
-#ifdef WIN32
-#include <windows.h>
 #endif
 
 #ifdef _GTK
@@ -162,9 +155,6 @@ static void ShowUsage(char *prog)
 {
 	printf("\nUsage is as follows:\n%s <options> filename\n\n",prog);
 	puts(DriverUsage);
-#ifdef _S9XLUA_H
-	puts ("--loadlua      f       Loads lua script from filename f.");
-#endif
 #ifdef CREATE_AVI
 	puts ("--videolog     c       Calls mencoder to grab the video and audio streams to\n                         encode them. Check the documentation for more on this.");
 	puts ("--mute        {0|1}    Mutes FCEUX while still passing the audio stream to\n                         mencoder during avi creation.");
@@ -549,11 +539,6 @@ int main(int argc, char *argv[])
 
 	FCEUD_Message("Starting " FCEU_NAME_AND_VERSION "...\n");
 
-#ifdef WIN32
-	/* Taken from win32 sdl_main.c */
-	SDL_SetModuleHandle(GetModuleHandle(NULL));
-#endif
-
 	/* SDL_INIT_VIDEO Needed for (joystick config) event processing? */
 	if(SDL_Init(SDL_INIT_VIDEO)) {
 		printf("Could not initialize SDL: %s.\n", SDL_GetError());
@@ -908,16 +893,6 @@ int main(int argc, char *argv[])
     } else {
         periodic_saves = 0;
     }
-	
-#ifdef _S9XLUA_H
-	// load lua script if option passed
-	g_config->getOption("SDL.LuaScript", &s);
-	g_config->setOption("SDL.LuaScript", "");
-	if (s != "")
-	{
-		FCEU_LoadLuaCode(s.c_str());
-	}
-#endif
 	
 	{
 		int id;

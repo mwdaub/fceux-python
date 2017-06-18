@@ -14,10 +14,6 @@
 #include "config.h"
 #include "icon.xpm"
 
-#ifdef _S9XLUA_H
-#include "../../fceulua.h"
-#endif
-
 #include <gtk/gtk.h>
 #include <gdk/gdkkeysyms.h>
 #ifdef GDK_WINDOWING_X11
@@ -1489,59 +1485,6 @@ void loadMovie ()
 	gtk_widget_destroy (fileChooser);
 }
 
-#ifdef _S9XLUA_H
-void loadLua ()
-{
-	GtkWidget* fileChooser;
-	GtkFileFilter* filterLua;
-	GtkFileFilter* filterAll;
-	
-	filterLua = gtk_file_filter_new();
-	gtk_file_filter_add_pattern(filterLua, "*.lua");
-	gtk_file_filter_add_pattern(filterLua, "*.LUA");
-	gtk_file_filter_set_name(filterLua, "Lua scripts");
-	
-	filterAll = gtk_file_filter_new();
-	gtk_file_filter_add_pattern(filterAll, "*");
-	gtk_file_filter_set_name(filterAll, "All Files");
-	
-	fileChooser = gtk_file_chooser_dialog_new ("Open LUA Script", GTK_WINDOW(MainWindow),
-			GTK_FILE_CHOOSER_ACTION_OPEN, GTK_STOCK_CANCEL, GTK_RESPONSE_CANCEL,
-			GTK_STOCK_OPEN, GTK_RESPONSE_ACCEPT, NULL);
-	
-	gtk_file_chooser_add_filter(GTK_FILE_CHOOSER(fileChooser), filterLua);
-	gtk_file_chooser_add_filter(GTK_FILE_CHOOSER(fileChooser), filterAll);
-	const char* last_file;
-	g_config->getOption("SDL.LastLoadLua", &last_file);
-	gtk_file_chooser_set_filename(GTK_FILE_CHOOSER(fileChooser), last_file);
-	
-	if(strcmp(last_file, "") == 0)
-		gtk_file_chooser_set_current_folder(GTK_FILE_CHOOSER(fileChooser), "/usr/share/fceux/luaScripts");
-	
-	if (gtk_dialog_run (GTK_DIALOG (fileChooser)) ==GTK_RESPONSE_ACCEPT)
-	{
-		char* filename;
-		
-		filename = gtk_file_chooser_get_filename (GTK_FILE_CHOOSER (fileChooser));
-		g_config->setOption("SDL.LastLoadLua", filename);
-		gtk_widget_destroy(fileChooser);
-		if(FCEU_LoadLuaCode(filename) == 0)
-		{
-			// This is necessary because lua scripts do not use FCEUD_PrintError to print errors.
-			GtkWidget* d;
-			d = gtk_message_dialog_new(GTK_WINDOW(MainWindow), GTK_DIALOG_MODAL, GTK_MESSAGE_ERROR, GTK_BUTTONS_OK, 
-				"Could not open the selected lua script.");
-			gtk_dialog_run(GTK_DIALOG(d));
-			gtk_widget_destroy(d);
-		}
-		g_free(filename);
-	}
-	else
-		gtk_widget_destroy (fileChooser);
-}
-#endif
-
-
 void loadFdsBios ()
 {
 	GtkWidget* fileChooser;
@@ -2190,9 +2133,6 @@ static char* menuXml =
 	"        <menuitem action='State9Action' />"
 	"      </menu>"
 	"      <separator />"
-#ifdef _S9XLUA_H
-	"      <menuitem action='LoadLuaScriptAction' />"
-#endif
 	"      <separator />"
 	"      <menuitem action='ScreenshotAction' />"
 	"      <separator />"
@@ -2251,9 +2191,6 @@ static GtkActionEntry normal_entries[] = {
 	{"QuickLoadAction", "go-jump", "Quick _Load", "F7", NULL, G_CALLBACK(quickLoad)},
 	{"QuickSaveAction", GTK_STOCK_SAVE, "Qu_ick Save", "F5", NULL, G_CALLBACK(quickSave)},
 	{"ChangeStateMenuAction", NULL, "C_hange State"},
-#ifdef _S9XLUA_H
-	{"LoadLuaScriptAction", GTK_STOCK_OPEN, "Load L_ua Script", "", NULL, G_CALLBACK(loadLua)},
-#endif
 	{"ScreenshotAction", NULL, "_Screenshot", "F12", NULL, G_CALLBACK(FCEUI_SaveSnapshot)},
 	{"QuitAction", GTK_STOCK_QUIT, "_Quit", "<control>Q", NULL, G_CALLBACK(quit)},
 	

@@ -67,9 +67,6 @@ void enableFullscreen ();
 void recordMovie();
 void recordMovieAs ();
 void loadMovie ();
-#ifdef _S9XLUA_H
-void loadLua ();
-#endif
 void loadFdsBios ();
 
 void enableGameGenie(int enabled);

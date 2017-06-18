@@ -18,7 +18,6 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
  */
 
-//todo - ensure that #ifdef WIN32 makes sense
 //consider changing this to use sdl net stuff?
 
 #include "main.h"
@@ -42,16 +41,12 @@
 #include <cerrno>
 #include <fcntl.h>
 
-#ifdef WIN32
-#include <winsock.h>
-#else
 #include <sys/socket.h>
 #include <sys/ioctl.h>
 #include <netinet/in.h>
 #include <netinet/tcp.h>
 #include <arpa/inet.h>
 #include <netdb.h>
-#endif
 
 extern Config *g_config;
 
@@ -217,18 +212,10 @@ FCEUD_NetworkConnect(void)
 			username.c_str(), username.size());
 	}
 
-#ifdef WIN32
-	send(s_Socket, (char*)sendbuf, sblen, 0);
-#else
 	send(s_Socket, sendbuf, sblen, 0);
-#endif
 	FCEU_dfree(sendbuf);
 
-#ifdef WIN32
-	recv(s_Socket, (char*)buf, 1, 0);
-#else
 	recv(s_Socket, buf, 1, MSG_WAITALL);
-#endif
 	netdivisor = buf[0];
 
 	puts("*** Connection established.");
@@ -246,9 +233,7 @@ FCEUD_SendData(void *data,
                uint32 len)
 {
 	int check = 0, error = 0;
-#ifndef WIN32
 	error = ioctl(fileno(stdin), FIONREAD, &check);
-#endif
 	if(!error && check) {
 		char buf[1024];
 		char *f;
@@ -259,11 +244,7 @@ FCEUD_SendData(void *data,
 		FCEUI_NetplayText((uint8 *)buf);
 	}
 
-#ifdef WIN32
-	send(s_Socket, (char*)data, len ,0);
-#else
 	send(s_Socket, data, len ,0);
-#endif
 	return 1;
 }
 
@@ -291,11 +272,7 @@ FCEUD_RecvData(void *data,
 		}
 
 		if(FD_ISSET(s_Socket,&funfun)) {
-#ifdef WIN32
-			size = recv(s_Socket, (char*)data, len, 0);
-#else
 			size = recv(s_Socket, data, len, MSG_WAITALL);
-#endif
 
 			if(size == len) {
 				//unsigned long beefie;

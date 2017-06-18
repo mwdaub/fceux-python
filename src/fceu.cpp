@@ -43,40 +43,10 @@
 #include "file.h"
 #include "vsuni.h"
 #include "ines.h"
-#ifdef WIN32
-#include "drivers/win/pref.h"
-#include "utils/xstring.h"
-
-extern void CDLoggerROMClosed();
-extern void CDLoggerROMChanged();
-extern void ResetDebugStatisticsCounters();
-extern void SetMainWindowText();
-extern bool isTaseditorRecording();
-
-extern int32 fps_scale;
-extern int32 fps_scale_unpaused;
-extern int32 fps_scale_frameadvance;
-#endif
 
 extern void RefreshThrottleFPS();
 
-#ifdef _S9XLUA_H
-#include "fceulua.h"
-#endif
-
-//TODO - we really need some kind of global platform-specific options api
-#ifdef WIN32
-#include "drivers/win/main.h"
-#include "drivers/win/memview.h"
-#include "drivers/win/cheat.h"
-#include "drivers/win/texthook.h"
-#include "drivers/win/ram_search.h"
-#include "drivers/win/ramwatch.h"
-#include "drivers/win/memwatch.h"
-#include "drivers/win/tracer.h"
-#else
 #include "drivers/sdl/sdl.h"
-#endif
 
 #include <fstream>
 #include <sstream>
@@ -156,9 +126,6 @@ void FCEU_TogglePPU(void) {
 		FCEUI_printf("Old PPU loaded");
 	}
 	normalscanlines = (dendy ? 290 : 240)+newppu; // use flag as number!
-#ifdef WIN32
-	SetMainWindowText();
-#endif
 }
 
 static void FCEU_CloseGame(void)
@@ -170,13 +137,6 @@ static void FCEU_CloseGame(void)
 			// save "-resume" savestate
 			FCEUSS_Save(FCEU_MakeFName(FCEUMKF_RESUMESTATE, 0, 0).c_str(), false);
 		}
-
-#ifdef WIN32
-		extern char LoadedRomFName[2048];
-		if (storePreferences(mass_replace(LoadedRomFName, "|", ".").c_str()))
-			FCEUD_PrintError("Couldn't store debugging data");
-		CDLoggerROMClosed();
-#endif
 
 		if (FCEUnetplay) {
 			FCEUD_NetworkClose();
@@ -484,18 +444,6 @@ FCEUGI *FCEUI_LoadGameVirtual(const char *name, int OverwriteVidMode, bool silen
 
 	FCEU_fclose(fp);
 
-#ifdef WIN32
-// ################################## Start of SP CODE ###########################
-	extern char LoadedRomFName[2048];
-	extern int loadDebugDataFailed;
-
-	if ((loadDebugDataFailed = loadPreferences(mass_replace(LoadedRomFName, "|", ".").c_str())))
-		if (!silent)
-			FCEU_printf("Couldn't load debugging data.\n");
-
-// ################################## End of SP CODE ###########################
-#endif
-
 	if (OverwriteVidMode)
 		FCEU_ResetVidSys();
 
@@ -506,9 +454,6 @@ FCEUGI *FCEUI_LoadGameVirtual(const char *name, int OverwriteVidMode, bool silen
 			if (FCEU_OpenGenie())
 			{
 				FCEUI_SetGameGenie(false);
-#ifdef WIN32
-				genie = 0;
-#endif
 			}
 		}
 	}
@@ -597,9 +542,6 @@ bool FCEUI_Initialize() {
 }
 
 void FCEUI_Kill(void) {
-	#ifdef _S9XLUA_H
-	FCEU_LuaStop();
-	#endif
 	FCEU_KillVirtualVideo();
 	FCEU_KillGenie();
 	FreeBuffers();
@@ -669,24 +611,8 @@ void FCEUI_Emulate(uint8 **pXBuf, int32 **SoundBuf, int32 *SoundBufSize, int ski
 		// the user is holding Frame Advance key
 		// clear paused flag temporarily
 		EmulationPaused &= ~EMULATIONPAUSED_PAUSED;
-#ifdef WIN32
-		// different emulation speed when holding Frame Advance
-		if (fps_scale_frameadvance > 0)
-		{
-			fps_scale = fps_scale_frameadvance;
-			RefreshThrottleFPS();
-		}
-#endif
 	} else
 	{
-#ifdef WIN32
-		if (fps_scale_frameadvance > 0)
-		{
-			// restore emulation speed when Frame Advance is not held
-			fps_scale = fps_scale_unpaused;
-			RefreshThrottleFPS();
-		}
-#endif
 		if (EmulationPaused & EMULATIONPAUSED_PAUSED)
 		{
 			// emulator is paused
@@ -702,42 +628,17 @@ void FCEUI_Emulate(uint8 **pXBuf, int32 **SoundBuf, int32 *SoundBufSize, int ski
 	AutoFire();
 	UpdateAutosave();
 
-#ifdef _S9XLUA_H
-	FCEU_LuaFrameBoundary();
-#endif
-
 	FCEU_UpdateInput();
 	lagFlag = 1;
-
-#ifdef _S9XLUA_H
-	CallRegisteredLuaFunctions(LUACALL_BEFOREEMULATION);
-#endif
 
 	if (geniestage != 1) FCEU_ApplyPeriodicCheats();
 	r = FCEUPPU_Loop(skip);
 
 	if (skip != 2) ssize = FlushEmulateSound();  //If skip = 2 we are skipping sound processing
 
-#ifdef _S9XLUA_H
-	CallRegisteredLuaFunctions(LUACALL_AFTEREMULATION);
-#endif
-
-#ifdef WIN32
-	//These Windows only dialogs need to be updated only once per frame so they are included here
-	UpdateCheatList(); // CaH4e3: can't see why, this is only cause problems with selection - adelikat: selection is only a problem when not paused, it shoudl be paused to select, we want to see the values update
-	UpdateTextHooker();
-	Update_RAM_Search(); // Update_RAM_Watch() is also called.
-	RamChange();
-	//FCEUI_AviVideoUpdate(XBuf);
-
-	extern int KillFCEUXonFrame;
-	if (KillFCEUXonFrame && (FCEUMOV_GetFrame() >= KillFCEUXonFrame))
-		DoFCEUExit();
-#else
 		extern int KillFCEUXonFrame;
 	if (KillFCEUXonFrame && (FCEUMOV_GetFrame() >= KillFCEUXonFrame))
 		exit(0);
-#endif
 
 	timestampbase += timestamp;
 	timestamp = 0;
@@ -758,10 +659,6 @@ void FCEUI_Emulate(uint8 **pXBuf, int32 **SoundBuf, int32 *SoundBufSize, int ski
 	{
 		EmulationPaused = EMULATIONPAUSED_PAUSED;		   // restore EMULATIONPAUSED_PAUSED flag and clear EMULATIONPAUSED_FA flag
 		JustFrameAdvanced = true;
-		#ifdef WIN32
-		if (soundoptions & SO_MUTEFA)  //mute the frame advance if the user requested it
-			*SoundBufSize = 0;         //keep sound muted
-		#endif
 	}
 
 	if (lagFlag) {
@@ -869,18 +766,11 @@ void PowerNES(void) {
 
 	timestampbase = 0;
 	X6502_Power();
-#ifdef WIN32
-	ResetDebugStatisticsCounters();
-#endif
 	FCEU_PowerCheats();
 	LagCounterReset();
 	// clear back buffer
 	extern uint8 *XBackBuf;
 	memset(XBackBuf, 0, 256 * 256);
-
-#ifdef WIN32
-	Update_RAM_Search(); // Update_RAM_Watch() is also called.
-#endif
 
 	FCEU_DispMessage("Power on", 0);
 }
@@ -981,47 +871,22 @@ void FCEUI_SetRegion(int region, int notify) {
 			pal_emulation = 0;
 			dendy = 0;
 // until it's fixed on sdl. see issue #740
-#ifdef WIN32
-			if (notify)
-			{
-				FCEU_DispMessage("NTSC mode set", 0);
-				FCEUI_printf("NTSC mode set");
-			}
-#endif
 			break;
 		case 1: // PAL
 			normalscanlines = 240;
 			pal_emulation = 1;
 			dendy = 0;
-#ifdef WIN32			
-			if (notify)
-			{
-				FCEU_DispMessage("PAL mode set", 0);
-				FCEUI_printf("PAL mode set");
-			}
-#endif
 			break;
 		case 2: // Dendy
 			normalscanlines = 290;
 			pal_emulation = 0;
 			dendy = 1;
-#ifdef WIN32			
-			if (notify)
-			{
-				FCEU_DispMessage("Dendy mode set", 0);
-				FCEUI_printf("Dendy mode set");
-			}
-#endif
 			break;
 	}
 	normalscanlines += newppu;
 	totalscanlines = normalscanlines + (overclock_enabled ? postrenderscanlines : 0);
 	FCEUI_SetVidSystem(pal_emulation);
 	RefreshThrottleFPS();
-#ifdef WIN32
-	UpdateCheckedMenuItems();
-	PushCurrentVideoSettings();
-#endif
 }
 
 //Enable or disable Game Genie option.
@@ -1164,9 +1029,6 @@ bool FCEU_IsValidUI(EFCEUI ui) {
 	case FCEUI_INSERT_COIN:
 		if (!GameInfo) return false;
 		if (FCEUMOV_Mode(MOVIEMODE_RECORD)) return true;
-#ifdef WIN32
-		if (FCEUMOV_Mode(MOVIEMODE_TASEDITOR) && isTaseditorRecording()) return true;
-#endif
 		if (!FCEUMOV_Mode(MOVIEMODE_INACTIVE)) return false;
 		break;
 	}
@@ -1300,11 +1162,7 @@ uint8 FCEU_ReadRomByte(uint32 i) {
 
 void FCEU_WriteRomByte(uint32 i, uint8 value) {
 	if (i < 16)
-#ifdef WIN32
-		MessageBox(hMemView,"Sorry", "You can't edit the ROM header.", MB_OK);
-#else
 		printf("Sorry, you can't edit the ROM header.\n");
-#endif
 	if (i < 16 + PRGsize[0])
 		PRGptr[0][i - 16] = value;
 	else if (i < 16 + PRGsize[0] + CHRsize[0])

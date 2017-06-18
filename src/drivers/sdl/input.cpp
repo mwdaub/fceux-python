@@ -32,9 +32,6 @@
 #include "../../fceu.h"
 #include "../../driver.h"
 #include "../../utils/xstring.h"
-#ifdef _S9XLUA_H
-#include "../../fceulua.h"
-#endif
 
 #ifdef _GTK
 #include "gui.h"
@@ -232,32 +229,6 @@ std::string GetFilename (const char *title, bool save, const char *filter)
 		FCEUI_ToggleEmulationPause ();
 	std::string fname = "";
 
-#ifdef WIN32
-	OPENFILENAME ofn;		// common dialog box structure
-	char szFile[260];		// buffer for file name
-	HWND hwnd;			// owner window
-	HANDLE hf;			// file handle
-
-	// Initialize OPENFILENAME
-	memset (&ofn, 0, sizeof (ofn));
-	ofn.lStructSize = sizeof (ofn);
-	ofn.hwndOwner = hwnd;
-	ofn.lpstrFile = szFile;
-	// Set lpstrFile[0] to '\0' so that GetOpenFileName does not 
-	// use the contents of szFile to initialize itself.
-	ofn.lpstrFile[0] = '\0';
-	ofn.nMaxFile = sizeof (szFile);
-	ofn.lpstrFilter = "All\0*.*\0";
-	ofn.nFilterIndex = 1;
-	ofn.lpstrFileTitle = NULL;
-	ofn.nMaxFileTitle = 0;
-	ofn.lpstrInitialDir = NULL;
-	ofn.Flags = OFN_PATHMUSTEXIST | OFN_FILEMUSTEXIST;
-
-	// Display the Open dialog box. 
-	fname = GetOpenFileName (&ofn);
-
-#endif
 #ifdef _GTK
 	int fullscreen = 0;
 	g_config->getOption ("SDL.Fullscreen", &fullscreen);
@@ -728,15 +699,6 @@ static void KeyboardCommands ()
 		}
 	}
 	else
-#ifdef _S9XLUA_H
-	if (_keyonly (Hotkeys[HK_LOAD_LUA]))
-	{
-		std::string fname;
-		fname = GetFilename ("Open LUA script...", false, "Lua scripts|*.lua");
-		if (fname != "")
-		FCEU_LoadLuaCode (fname.c_str ());
-	}
-#endif
 
 	for (int i = 0; i < 10; i++)
 		if (_keyonly (Hotkeys[HK_SELECT_STATE_0 + i]))

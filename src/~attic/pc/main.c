@@ -48,11 +48,7 @@ int soundvol=100;
 long soundq=0;
 int _sound=1;
 long soundrate=48000;
-#ifdef WIN32
-long soundbufsize=52;
-#else
 long soundbufsize=24;
-#endif
 
 #ifdef FRAMESKIP
 static int frameskip=0;
@@ -155,21 +151,12 @@ static void CreateDirs(void)
  char tdir[2048];
  int x;
 
- #ifdef WIN32
- mkdir(DrBaseDirectory);
- for(x=0;x<6;x++)
- {
-  sprintf(tdir,"%s"PSS"%s",DrBaseDirectory,subs[x]);
-  mkdir(tdir);
- }
- #else
  mkdir(DrBaseDirectory,S_IRWXU);
  for(x=0;x<6;x++)
  {
   sprintf(tdir,"%s"PSS"%s",DrBaseDirectory,subs[x]);
   mkdir(tdir,S_IRWXU);
  }
- #endif
 }
 
 #ifndef WIN32

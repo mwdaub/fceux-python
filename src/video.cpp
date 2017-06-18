@@ -33,14 +33,6 @@
 #include "drawing.h"
 #include "driver.h"
 #include "drivers/common/vidblit.h"
-#ifdef _S9XLUA_H
-#include "fceulua.h"
-#endif
-
-#ifdef WIN32
-#include "drivers/win/common.h" //For DirectX constants
-#include "drivers/win/input.h"
-#endif
 
 #ifdef CREATE_AVI
 #include "drivers/videolog/nesvideos-piece.h"
@@ -195,10 +187,6 @@ void FCEU_PutImage(void)
 	{
 		DrawNSF(XBuf);
 
-#ifdef _S9XLUA_H
-		FCEU_LuaGui(XBuf);
-#endif
-
 		//Save snapshot after NSF screen is drawn.  Why would we want to do it before?
 		if(dosnapsave==1)
 		{
@@ -214,11 +202,6 @@ void FCEU_PutImage(void)
 
 		//Some messages need to be displayed before the avi is dumped
 		DrawMessage(true);
-
-#ifdef _S9XLUA_H
-		// Lua gui should draw before the avi is dumped.
-		FCEU_LuaGui(XBuf);
-#endif
 
 		//Save snapshot
 		if(dosnapsave==1)
@@ -269,19 +252,10 @@ void FCEU_PutImage(void)
 					t[i+j*256] = 0xCF;
 			c = cur_input_display >> (controller * 8);
 
-			// This doesn't work in anything except windows for now.
 			// It doesn't get set anywhere in other ports.
-#ifdef WIN32
-			if (!oldInputDisplay) ci = FCEUMOV_Mode(MOVIEMODE_PLAY) ? 0:GetGamepadPressedImmediate() >> (controller * 8);
-			else ci = 0;
-
-			if (!oldInputDisplay && !FCEUMOV_Mode(MOVIEMODE_PLAY)) held = (JSAutoHeld >> (controller * 8));
-			else held = 0;
-#else
 			// Put other port info here
 			ci = 0;
 			held = 0;
-#endif
 
 			//adelikat: I apologize to anyone who ever sifts through this color assignment
 			//A
