@@ -83,97 +83,92 @@ if env['PLATFORM'] == 'cygwin':
   env.Append(LINKFLAGS = " -mno-cygwin")
   env['LIBS'] = ['wsock32'];
 
-if env['PLATFORM'] == 'win32':
-  env.Append(CPPPATH = [".", "drivers/win/", "drivers/common/", "drivers/", "drivers/win/zlib", "drivers/win/directx", "drivers/win/lua/include"])
-  env.Append(CPPDEFINES = ["PSS_STYLE=2", "WIN32", "_USE_SHARED_MEMORY_", "NETWORK", "FCEUDEF_DEBUGGER", "NOMINMAX", "NEED_MINGW_HACKS", "_WIN32_IE=0x0600"])
-  env.Append(LIBS = ["rpcrt4", "comctl32", "vfw32", "winmm", "ws2_32", "comdlg32", "ole32", "gdi32", "htmlhelp"])
+conf = Configure(env)
+# If libdw is available, compile in backward-cpp support
+if conf.CheckLib('dw'):
+  conf.env.Append(CCFLAGS = "-DBACKWARD_HAS_DW=1")
+  conf.env.Append(LINKFLAGS = "-ldw")
+if conf.CheckFunc('asprintf'):
+  conf.env.Append(CCFLAGS = "-DHAVE_ASPRINTF")
+if env['SYSTEM_MINIZIP']:
+  assert conf.CheckLibWithHeader('minizip', 'minizip/unzip.h', 'C', 'unzOpen;', 1), "please install: libminizip"
+  assert conf.CheckLibWithHeader('z', 'zlib.h', 'c', 'inflate;', 1), "please install: zlib"
+  env.Append(CPPDEFINES=["_SYSTEM_MINIZIP"])
 else:
-  conf = Configure(env)
-  # If libdw is available, compile in backward-cpp support
-  if conf.CheckLib('dw'):
-    conf.env.Append(CCFLAGS = "-DBACKWARD_HAS_DW=1")
-    conf.env.Append(LINKFLAGS = "-ldw")
-  if conf.CheckFunc('asprintf'):
-    conf.env.Append(CCFLAGS = "-DHAVE_ASPRINTF")
-  if env['SYSTEM_MINIZIP']:
-    assert conf.CheckLibWithHeader('minizip', 'minizip/unzip.h', 'C', 'unzOpen;', 1), "please install: libminizip"
-    assert conf.CheckLibWithHeader('z', 'zlib.h', 'c', 'inflate;', 1), "please install: zlib"
-    env.Append(CPPDEFINES=["_SYSTEM_MINIZIP"])
-  else:
-    assert conf.CheckLibWithHeader('z', 'zlib.h', 'c', 'inflate;', 1), "please install: zlib"
-  if env['SDL2']:
-    if not conf.CheckLib('SDL2'):
-      print 'Did not find libSDL2 or SDL2.lib, exiting!'
-      Exit(1)
-    env.Append(CPPDEFINES=["_SDL2"])
-    env.ParseConfig('pkg-config sdl2 --cflags --libs')
-  else:
-    if not conf.CheckLib('SDL'):
-      print 'Did not find libSDL or SDL.lib, exiting!'
-      Exit(1)
-    env.ParseConfig('sdl-config --cflags --libs')
-  if env['GTK']:
-    if not conf.CheckLib('gtk-x11-2.0'):
-      print 'Could not find libgtk-2.0, exiting!'
-      Exit(1)
-    # Add compiler and linker flags from pkg-config
-    config_string = 'pkg-config --cflags --libs gtk+-2.0'
-    env.ParseConfig(config_string)
-    env.Append(CPPDEFINES=["_GTK2"])
-    env.Append(CCFLAGS = ["-D_GTK"])
-  if env['GTK3']:
-    # Add compiler and linker flags from pkg-config
-    config_string = 'pkg-config --cflags --libs gtk+-3.0'
-    env.ParseConfig(config_string)
-    env.Append(CPPDEFINES=["_GTK3"])
-    env.Append(CCFLAGS = ["-D_GTK"])
+  assert conf.CheckLibWithHeader('z', 'zlib.h', 'c', 'inflate;', 1), "please install: zlib"
+if env['SDL2']:
+  if not conf.CheckLib('SDL2'):
+    print 'Did not find libSDL2 or SDL2.lib, exiting!'
+    Exit(1)
+  env.Append(CPPDEFINES=["_SDL2"])
+  env.ParseConfig('pkg-config sdl2 --cflags --libs')
+else:
+  if not conf.CheckLib('SDL'):
+    print 'Did not find libSDL or SDL.lib, exiting!'
+    Exit(1)
+  env.ParseConfig('sdl-config --cflags --libs')
+if env['GTK']:
+  if not conf.CheckLib('gtk-x11-2.0'):
+    print 'Could not find libgtk-2.0, exiting!'
+    Exit(1)
+  # Add compiler and linker flags from pkg-config
+  config_string = 'pkg-config --cflags --libs gtk+-2.0'
+  env.ParseConfig(config_string)
+  env.Append(CPPDEFINES=["_GTK2"])
+  env.Append(CCFLAGS = ["-D_GTK"])
+if env['GTK3']:
+  # Add compiler and linker flags from pkg-config
+  config_string = 'pkg-config --cflags --libs gtk+-3.0'
+  env.ParseConfig(config_string)
+  env.Append(CPPDEFINES=["_GTK3"])
+  env.Append(CCFLAGS = ["-D_GTK"])
 
-  ### Just make every configuration use -ldl, it may be needed for some reason.
-  env.Append(LIBS = ["-ldl"])
+### Just make every configuration use -ldl, it may be needed for some reason.
+env.Append(LIBS = ["-ldl"])
 
-  ### Lua platform defines
-  ### Applies to all files even though only lua needs it, but should be ok
-  if env['LUA']:
-    env.Append(CPPDEFINES=["_S9XLUA_H"])
-    if env['PLATFORM'] == 'darwin':
-      # Define LUA_USE_MACOSX otherwise we can't bind external libs from lua
-      env.Append(CCFLAGS = ["-DLUA_USE_MACOSX"])    
-    if env['PLATFORM'] == 'posix':
-      # If we're POSIX, we use LUA_USE_LINUX since that combines usual lua posix defines with dlfcn calls for dynamic library loading.
-      # Should work on any *nix
-      env.Append(CCFLAGS = ["-DLUA_USE_LINUX"])
-    lua_available = False
-    if env['SYSTEM_LUA']:
-      if conf.CheckLib('lua5.1'):
-        env.Append(LINKFLAGS = ["-llua5.1"])
-        env.Append(CCFLAGS = ["-I/usr/include/lua5.1"])
-        lua_available = True
-      elif conf.CheckLib('lua'):
-        env.Append(LINKFLAGS = ["-llua"])
-        env.Append(CCFLAGS = ["-I/usr/include/lua"])
-        lua_available = True
-      if lua_available == False:
-        print 'Could not find liblua, exiting!'
-        Exit(1)
-    else:
-      env.Append(CCFLAGS = ["-Isrc/lua/src"])
+### Lua platform defines
+### Applies to all files even though only lua needs it, but should be ok
+if env['LUA']:
+  env.Append(CPPDEFINES=["_S9XLUA_H"])
+  if env['PLATFORM'] == 'darwin':
+    # Define LUA_USE_MACOSX otherwise we can't bind external libs from lua
+    env.Append(CCFLAGS = ["-DLUA_USE_MACOSX"])    
+  if env['PLATFORM'] == 'posix':
+    # If we're POSIX, we use LUA_USE_LINUX since that combines usual lua posix defines with dlfcn calls for dynamic library loading.
+    # Should work on any *nix
+    env.Append(CCFLAGS = ["-DLUA_USE_LINUX"])
+  lua_available = False
+  if env['SYSTEM_LUA']:
+    if conf.CheckLib('lua5.1'):
+      env.Append(LINKFLAGS = ["-llua5.1"])
+      env.Append(CCFLAGS = ["-I/usr/include/lua5.1"])
       lua_available = True
-  # "--as-needed" no longer available on OSX (probably BSD as well? TODO: test)
-  if env['PLATFORM'] != 'darwin':
-    env.Append(LINKFLAGS=['-Wl,--as-needed'])
-  
-  ### Search for gd if we're not in Windows
-  if (env['PLATFORM'] != 'win32' and env['PLATFORM'] != 'cygwin') and (env['CREATE_AVI'] or env['LOGO']):
-    gd = conf.CheckLib('gd', autoadd=1)
-    if gd == 0:
-      env['LOGO'] = 0
-      print 'Did not find libgd, you won\'t be able to create a logo screen for your avis.'
-   
-  if env['OPENGL'] and conf.CheckLibWithHeader('GL', 'GL/gl.h', 'c', autoadd=1):
-    conf.env.Append(CCFLAGS = "-DOPENGL")
-  conf.env.Append(CPPDEFINES = ['PSS_STYLE=1'])
-  
-  env = conf.Finish()
+    elif conf.CheckLib('lua'):
+      env.Append(LINKFLAGS = ["-llua"])
+      env.Append(CCFLAGS = ["-I/usr/include/lua"])
+      lua_available = True
+    if lua_available == False:
+      print 'Could not find liblua, exiting!'
+      Exit(1)
+  else:
+    env.Append(CCFLAGS = ["-Isrc/lua/src"])
+    lua_available = True
+# "--as-needed" no longer available on OSX (probably BSD as well? TODO: test)
+if env['PLATFORM'] != 'darwin':
+  env.Append(LINKFLAGS=['-Wl,--as-needed'])
+
+### Search for gd if we're not in Windows
+if (env['PLATFORM'] != 'win32' and env['PLATFORM'] != 'cygwin') and (env['CREATE_AVI'] or env['LOGO']):
+  gd = conf.CheckLib('gd', autoadd=1)
+  if gd == 0:
+    env['LOGO'] = 0
+    print 'Did not find libgd, you won\'t be able to create a logo screen for your avis.'
+ 
+if env['OPENGL'] and conf.CheckLibWithHeader('GL', 'GL/gl.h', 'c', autoadd=1):
+  conf.env.Append(CCFLAGS = "-DOPENGL")
+conf.env.Append(CPPDEFINES = ['PSS_STYLE=1'])
+
+env = conf.Finish()
 
 if sys.byteorder == 'little' or env['PLATFORM'] == 'win32':
   env.Append(CPPDEFINES = ['LSB_FIRST'])
