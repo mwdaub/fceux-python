@@ -18,13 +18,11 @@ opts.AddVariables(
   BoolVariable('RELEASE',   'Set to 1 to build for release', 0),
   BoolVariable('FRAMESKIP', 'Enable frameskipping', 1),
   BoolVariable('OPENGL',    'Enable OpenGL support', 1),
-  BoolVariable('LUA',       'Enable Lua support', 1),
   BoolVariable('GTK', 'Enable GTK2 GUI (SDL only)', 1),
   BoolVariable('GTK3', 'Enable GTK3 GUI (SDL only)', 0),
   BoolVariable('NEWPPU',    'Enable new PPU core', 1),
   BoolVariable('CREATE_AVI', 'Enable avi creation support (SDL only)', 1),
   BoolVariable('LOGO', 'Enable a logoscreen when creating avis (SDL only)', 1),
-  BoolVariable('SYSTEM_LUA','Use system lua instead of static lua provided with fceux', 0),
   BoolVariable('SYSTEM_MINIZIP', 'Use system minizip instead of static minizip provided with fceux', 0),
   BoolVariable('LSB_FIRST', 'Least signficant byte first (non-PPC)', 1),
   BoolVariable('CLANG', 'Compile with llvm-clang instead of gcc', 0),
@@ -126,33 +124,6 @@ if env['GTK3']:
 ### Just make every configuration use -ldl, it may be needed for some reason.
 env.Append(LIBS = ["-ldl"])
 
-### Lua platform defines
-### Applies to all files even though only lua needs it, but should be ok
-if env['LUA']:
-  env.Append(CPPDEFINES=["_S9XLUA_H"])
-  if env['PLATFORM'] == 'darwin':
-    # Define LUA_USE_MACOSX otherwise we can't bind external libs from lua
-    env.Append(CCFLAGS = ["-DLUA_USE_MACOSX"])    
-  if env['PLATFORM'] == 'posix':
-    # If we're POSIX, we use LUA_USE_LINUX since that combines usual lua posix defines with dlfcn calls for dynamic library loading.
-    # Should work on any *nix
-    env.Append(CCFLAGS = ["-DLUA_USE_LINUX"])
-  lua_available = False
-  if env['SYSTEM_LUA']:
-    if conf.CheckLib('lua5.1'):
-      env.Append(LINKFLAGS = ["-llua5.1"])
-      env.Append(CCFLAGS = ["-I/usr/include/lua5.1"])
-      lua_available = True
-    elif conf.CheckLib('lua'):
-      env.Append(LINKFLAGS = ["-llua"])
-      env.Append(CCFLAGS = ["-I/usr/include/lua"])
-      lua_available = True
-    if lua_available == False:
-      print 'Could not find liblua, exiting!'
-      Exit(1)
-  else:
-    env.Append(CCFLAGS = ["-Isrc/lua/src"])
-    lua_available = True
 # "--as-needed" no longer available on OSX (probably BSD as well? TODO: test)
 if env['PLATFORM'] != 'darwin':
   env.Append(LINKFLAGS=['-Wl,--as-needed'])
@@ -203,11 +174,7 @@ if env['PLATFORM'] == 'win32':
 fceux_src = 'src/fceux' + exe_suffix
 fceux_dst = 'bin/fceux' + exe_suffix
 
-auxlib_src = 'src/auxlib.lua'
-auxlib_dst = 'bin/auxlib.lua'
-
 env.Command(fceux_dst, fceux_src, [Copy(fceux_dst, fceux_src)])
-env.Command(auxlib_dst, auxlib_src, [Copy(auxlib_dst, auxlib_src)])
 
 man_src = 'documentation/fceux.6'
 
@@ -219,7 +186,6 @@ desktop_src = 'fceux.desktop'
 
 env.Install(prefix + "/bin/", [fceux])
 env.InstallAs(prefix + '/share/fceux/', share_src)
-env.Install(prefix + '/share/fceux/', auxlib_src)
 env.Install(prefix + '/share/pixmaps/', image_src)
 env.Install(prefix + '/share/applications/', desktop_src)
 env.Install(prefix + "/share/man/man6/", [man_src])
