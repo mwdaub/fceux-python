@@ -1,0 +1,22 @@
+syntax = "proto3";
+
+package bot;
+
+service BotService {
+  rpc GetNextAction(ActionRequest) returns (ActionResponse) {}
+}
+
+message ActionRequest {
+  Pixels pixels = 1;
+}
+
+message ActionResponse {
+  repeated string actions = 1;
+}
+
+message Pixels {
+  bytes red_values = 1;
+  bytes blue_values = 2;
+  bytes green_values = 3;
+  int32 width = 4;
+}

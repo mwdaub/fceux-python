@@ -30,3 +30,8 @@
 *.exe
 *.out
 *.app
+
+# SCons files
+config.log
+.sconf_temp
+.sconsign.dblite
