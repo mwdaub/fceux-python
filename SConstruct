@@ -161,7 +161,7 @@ else:
   env['CREATE_AVI']=0;
 
 Export('env')
-fceux = SConscript('src/SConscript')
+fceux = SConscript('src/fceux/SConscript')
 
 # Installation rules
 if prefix == None:
@@ -171,7 +171,7 @@ exe_suffix = ''
 if env['PLATFORM'] == 'win32':
   exe_suffix = '.exe'
 
-fceux_src = 'src/fceux' + exe_suffix
+fceux_src = 'src/fceux/fceux' + exe_suffix
 fceux_dst = 'bin/fceux' + exe_suffix
 
 env.Command(fceux_dst, fceux_src, [Copy(fceux_dst, fceux_src)])
