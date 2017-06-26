@@ -852,7 +852,7 @@ void FCEUI_SetVidSystem(int a) {
 	if (GameInfo) {
 		FCEU_ResetVidSys();
 		FCEU_ResetPalette();
-		FCEUD_VideoChanged();
+		// FCEUD_VideoChanged();
 	}
 }
 

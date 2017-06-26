@@ -29,7 +29,7 @@ file_list.append(platform_files)
 print env['LINKFLAGS']
 
 if env['PLATFORM'] == 'win32':
-  fceux = env.Program('fceux.exe', file_list)
+  fceux = env.Library('fceux.exe', file_list)
 else:
-  fceux = env.Program('fceux', file_list)
+  fceux = env.Library('fceux', file_list)
 Return('fceux')

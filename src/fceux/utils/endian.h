@@ -1,7 +1,8 @@
 #ifndef __FCEU_ENDIAN
 #define __FCEU_ENDIAN
 
-#include <iosfwd>
+#include <istream>
+#include <ostream>
 #include <stdio.h>
 #include "../types.h"
 #include "../emufile.h"

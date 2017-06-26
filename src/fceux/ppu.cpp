@@ -321,7 +321,7 @@ static void makeppulut(void) {
 	}
 }
 
-static int ppudead = 1;
+int ppudead = 1;
 static int kook = 0;
 int fceuindbg = 0;
 

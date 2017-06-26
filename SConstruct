@@ -17,8 +17,8 @@ opts.AddVariables(
   BoolVariable('DEBUG',     'Build with debugging symbols', 1),
   BoolVariable('RELEASE',   'Set to 1 to build for release', 0),
   BoolVariable('FRAMESKIP', 'Enable frameskipping', 1),
-  BoolVariable('OPENGL',    'Enable OpenGL support', 1),
-  BoolVariable('GTK', 'Enable GTK2 GUI (SDL only)', 1),
+  BoolVariable('OPENGL',    'Enable OpenGL support', 0),
+  BoolVariable('GTK', 'Enable GTK2 GUI (SDL only)', 0),
   BoolVariable('GTK3', 'Enable GTK3 GUI (SDL only)', 0),
   BoolVariable('NEWPPU',    'Enable new PPU core', 1),
   BoolVariable('CREATE_AVI', 'Enable avi creation support (SDL only)', 1),
@@ -124,6 +124,8 @@ if env['GTK3']:
 ### Just make every configuration use -ldl, it may be needed for some reason.
 env.Append(LIBS = ["-ldl"])
 
+env.Append(CCFLAGS = ["-fPIC"])
+
 # "--as-needed" no longer available on OSX (probably BSD as well? TODO: test)
 if env['PLATFORM'] != 'darwin':
   env.Append(LINKFLAGS=['-Wl,--as-needed'])
@@ -176,17 +178,5 @@ fceux_dst = 'bin/fceux' + exe_suffix
 
 env.Command(fceux_dst, fceux_src, [Copy(fceux_dst, fceux_src)])
 
-man_src = 'documentation/fceux.6'
-
-share_src = 'output/'
-
-image_src = 'fceux.png'
-
-desktop_src = 'fceux.desktop'
-
-env.Install(prefix + "/bin/", [fceux])
-env.InstallAs(prefix + '/share/fceux/', share_src)
-env.Install(prefix + '/share/pixmaps/', image_src)
-env.Install(prefix + '/share/applications/', desktop_src)
-env.Install(prefix + "/share/man/man6/", [man_src])
+env.Install(prefix + "/lib/", [fceux])
 env.Alias('install', prefix)
