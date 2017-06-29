@@ -30,3 +30,8 @@
 *.exe
 *.out
 *.app
+
+# SCons artifacts
+config.log
+.sconsign.dblite
+.sconf_temp

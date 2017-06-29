@@ -18,7 +18,7 @@ opts.AddVariables(
   BoolVariable('RELEASE',   'Set to 1 to build for release', 0),
   BoolVariable('FRAMESKIP', 'Enable frameskipping', 1),
   BoolVariable('OPENGL',    'Enable OpenGL support', 1),
-  BoolVariable('LUA',       'Enable Lua support', 1),
+  BoolVariable('LUA',       'Enable Lua support', 0),
   BoolVariable('GTK', 'Enable GTK2 GUI (SDL only)', 1),
   BoolVariable('GTK3', 'Enable GTK3 GUI (SDL only)', 0),
   BoolVariable('NEWPPU',    'Enable new PPU core', 1),
@@ -28,7 +28,8 @@ opts.AddVariables(
   BoolVariable('SYSTEM_MINIZIP', 'Use system minizip instead of static minizip provided with fceux', 0),
   BoolVariable('LSB_FIRST', 'Least signficant byte first (non-PPC)', 1),
   BoolVariable('CLANG', 'Compile with llvm-clang instead of gcc', 0),
-  BoolVariable('SDL2', 'Compile using SDL2 instead of SDL 1.2 (experimental/non-functional)', 0)
+  BoolVariable('SDL2', 'Compile using SDL2 instead of SDL 1.2 (experimental/non-functional)', 0),
+  BoolVariable('LIB', 'Compile as a library instead of a binary', 1)
 )
 AddOption('--prefix', dest='prefix', type='string', nargs=1, action='store', metavar='DIR', help='installation prefix')
 
@@ -195,47 +196,50 @@ else:
   env['CREATE_AVI']=0;
 
 Export('env')
-fceux = SConscript('src/SConscript')
-env.Program(target="fceux-net-server", source=["fceux-server/server.cpp", "fceux-server/md5.cpp", "fceux-server/throttle.cpp"])
+fceux = SConscript('src/fceux/SConscript')
+if not env['LIB']:
+  env.Program(target="fceux-net-server", source=["fceux-server/server.cpp", "fceux-server/md5.cpp", "fceux-server/throttle.cpp"])
 
 # Installation rules
-if prefix == None:
-  prefix = "/usr/local"
+# Only perform these steps if not compiling fceux as a library
+if not env['LIB']:
+  if prefix == None:
+    prefix = "/usr/local"
 
-exe_suffix = ''
-if env['PLATFORM'] == 'win32':
-  exe_suffix = '.exe'
+  exe_suffix = ''
+  if env['PLATFORM'] == 'win32':
+    exe_suffix = '.exe'
 
-fceux_src = 'src/fceux' + exe_suffix
-fceux_dst = 'bin/fceux' + exe_suffix
+  fceux_src = 'src/fceux' + exe_suffix
+  fceux_dst = 'bin/fceux' + exe_suffix
 
-fceux_net_server_src = 'fceux-net-server' + exe_suffix
-fceux_net_server_dst = 'bin/fceux-net-server' + exe_suffix
+  fceux_net_server_src = 'fceux-net-server' + exe_suffix
+  fceux_net_server_dst = 'bin/fceux-net-server' + exe_suffix
 
-auxlib_src = 'src/auxlib.lua'
-auxlib_dst = 'bin/auxlib.lua'
+  auxlib_src = 'src/auxlib.lua'
+  auxlib_dst = 'bin/auxlib.lua'
 
-fceux_h_src = 'output/fceux.chm'
-fceux_h_dst = 'bin/fceux.chm'
+  fceux_h_src = 'output/fceux.chm'
+  fceux_h_dst = 'bin/fceux.chm'
 
-env.Command(fceux_h_dst, fceux_h_src, [Copy(fceux_h_dst, fceux_h_src)])
-env.Command(fceux_dst, fceux_src, [Copy(fceux_dst, fceux_src)])
-env.Command(fceux_net_server_dst, fceux_net_server_src, [Copy(fceux_net_server_dst, fceux_net_server_src)])
-env.Command(auxlib_dst, auxlib_src, [Copy(auxlib_dst, auxlib_src)])
+  env.Command(fceux_h_dst, fceux_h_src, [Copy(fceux_h_dst, fceux_h_src)])
+  env.Command(fceux_dst, fceux_src, [Copy(fceux_dst, fceux_src)])
+  env.Command(fceux_net_server_dst, fceux_net_server_src, [Copy(fceux_net_server_dst, fceux_net_server_src)])
+  env.Command(auxlib_dst, auxlib_src, [Copy(auxlib_dst, auxlib_src)])
 
-man_src = 'documentation/fceux.6'
-man_net_src = 'documentation/fceux-net-server.6'
+  man_src = 'documentation/fceux.6'
+  man_net_src = 'documentation/fceux-net-server.6'
 
-share_src = 'output/'
+  share_src = 'output/'
 
-image_src = 'fceux.png'
+  image_src = 'fceux.png'
 
-desktop_src = 'fceux.desktop'
+  desktop_src = 'fceux.desktop'
 
-env.Install(prefix + "/bin/", [fceux, fceux_net_server_src])
-env.InstallAs(prefix + '/share/fceux/', share_src)
-env.Install(prefix + '/share/fceux/', auxlib_src)
-env.Install(prefix + '/share/pixmaps/', image_src)
-env.Install(prefix + '/share/applications/', desktop_src)
-env.Install(prefix + "/share/man/man6/", [man_src, man_net_src])
-env.Alias('install', prefix)
+  env.Install(prefix + "/bin/", [fceux, fceux_net_server_src])
+  env.InstallAs(prefix + '/share/fceux/', share_src)
+  env.Install(prefix + '/share/fceux/', auxlib_src)
+  env.Install(prefix + '/share/pixmaps/', image_src)
+  env.Install(prefix + '/share/applications/', desktop_src)
+  env.Install(prefix + "/share/man/man6/", [man_src, man_net_src])
+  env.Alias('install', prefix)
