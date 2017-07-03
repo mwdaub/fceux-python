@@ -1,4 +1,9 @@
+#include <stdio.h>
+
 #include "fceuxmodule.h"
+
+// Python error for when a file is not a valid ROM format.
+static PyObject *InvalidRomError;
 
 // Game input.
 // "A" = 1, "B" = 2, "SELECT" = 4, "START" = 8, "UP" = 16, "DOWN" = 32, "LEFT" = 64, "RIGHT" = 128
@@ -15,6 +20,9 @@ static PyObject * fceux_load_rom(PyObject *self, PyObject *args) {
   }
 
   if (!FCEUI_LoadGame(arg, 1)) {
+    char *msg;
+    asprintf(&msg,"File %s is not a valid ROM or does not exist.", arg);
+    PyErr_SetString(InvalidRomError, msg);
     return NULL;
   }
   FCEUI_SetInput(0, SI_GAMEPAD, &input, 0);
@@ -23,7 +31,8 @@ static PyObject * fceux_load_rom(PyObject *self, PyObject *args) {
   return Py_None;
 }
 
-static long int dims[] = {256, 256, 3};
+// Dimensions of the game image.
+static long int dims[] = {240, 256, 3};
 
 static PyObject * fceux_emulate_frame(PyObject *self, PyObject *args) {
   // parse arguments
@@ -38,7 +47,7 @@ static PyObject * fceux_emulate_frame(PyObject *self, PyObject *args) {
 
   PyObject *array = PyArray_SimpleNew(3, dims, NPY_UINT8);
   unsigned char *data = (unsigned char *) PyArray_DATA(array);
-  for (size_t i = 0; i < 256*256; i++) {
+  for (size_t i = 0; i < 240*256; i++) {
     unsigned char idx = gfx[i] - 128;
     data[3*i] = palo[idx].r;
     data[3*i+1] = palo[idx].g;
@@ -69,7 +78,16 @@ static PyMethodDef FceuxMethods[] = {
 
 PyMODINIT_FUNC initfceux(void)
 {
-  (void) Py_InitModule("fceux", FceuxMethods);
+  PyObject *m;
+  m = Py_InitModule("fceux", FceuxMethods);
+  if (m == NULL) {
+    return;
+  }
+
+  InvalidRomError = PyErr_NewException("fceux.invalid_rom", NULL, NULL);
+  Py_INCREF(InvalidRomError);
+  PyModule_AddObject(m, "error", InvalidRomError);
+
   import_array();
   FCEUI_Initialize();
 }
