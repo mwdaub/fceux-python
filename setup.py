@@ -1,4 +1,7 @@
 from distutils.core import setup, Extension
+import subprocess
+
+subprocess.check_call(["scons"])
 
 sources = ['src/fceuxmodule.cpp']
 libraries = ['fceux', 'SDL']
