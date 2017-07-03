@@ -16,10 +16,10 @@ opts = Variables(None, ARGUMENTS)
 opts.AddVariables( 
   BoolVariable('DEBUG',     'Build with debugging symbols', 1),
   BoolVariable('RELEASE',   'Set to 1 to build for release', 0),
-  BoolVariable('FRAMESKIP', 'Enable frameskipping', 1),
-  BoolVariable('OPENGL',    'Enable OpenGL support', 1),
+  BoolVariable('FRAMESKIP', 'Enable frameskipping', 0),
+  BoolVariable('OPENGL',    'Enable OpenGL support', 0),
   BoolVariable('LUA',       'Enable Lua support', 0),
-  BoolVariable('GTK', 'Enable GTK2 GUI (SDL only)', 1),
+  BoolVariable('GTK', 'Enable GTK2 GUI (SDL only)', 0),
   BoolVariable('GTK3', 'Enable GTK3 GUI (SDL only)', 0),
   BoolVariable('NEWPPU',    'Enable new PPU core', 1),
   BoolVariable('CREATE_AVI', 'Enable avi creation support (SDL only)', 1),
@@ -182,6 +182,10 @@ if sys.byteorder == 'little' or env['PLATFORM'] == 'win32':
 if env['FRAMESKIP']:
   env.Append(CPPDEFINES = ['FRAMESKIP'])
 
+if env['LIB']:
+  env.Append(CCFLAGS = "-fPIC")
+  env.Append(CPPDEFINES = "FCEU_LIB")
+
 print "base CPPDEFINES:",env['CPPDEFINES']
 print "base CCFLAGS:",env['CCFLAGS']
 
@@ -197,12 +201,12 @@ else:
 
 Export('env')
 fceux = SConscript('src/fceux/SConscript')
-if not env['LIB']:
-  env.Program(target="fceux-net-server", source=["fceux-server/server.cpp", "fceux-server/md5.cpp", "fceux-server/throttle.cpp"])
 
 # Installation rules
 # Only perform these steps if not compiling fceux as a library
 if not env['LIB']:
+  env.Program(target="fceux-net-server", source=["fceux-server/server.cpp", "fceux-server/md5.cpp", "fceux-server/throttle.cpp"])
+
   if prefix == None:
     prefix = "/usr/local"
 
