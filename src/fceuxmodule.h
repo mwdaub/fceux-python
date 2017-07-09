@@ -9,6 +9,8 @@
 bool FCEUI_Initialize();
 void FCEUI_SetInput(int port, ESI type, void *ptr, int attrib);
 FCEUGI *FCEUI_LoadGame(const char *name, int OverwriteVidMode, bool silent = false);
+void FCEUI_SaveState(const char *fname, bool display_message=true);
+void FCEUI_LoadState(const char *fname, bool display_message=true);
 void FCEUI_CloseGame();
 void FCEUI_SaveMovie(const char *filename, EMOVIE_FLAG flags, std::wstring author);
 void FCEUI_Emulate(uint8 **pXBuf, int32 **SoundBuf, int32 *SoundBufSize, int skip);
