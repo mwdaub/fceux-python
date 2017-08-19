@@ -200,7 +200,7 @@ else:
   env['CREATE_AVI']=0;
 
 Export('env')
-fceux = SConscript('src/fceux/SConscript')
+fceux = SConscript('src/cpp/fceux/SConscript')
 
 # Installation rules
 # Only perform these steps if not compiling fceux as a library

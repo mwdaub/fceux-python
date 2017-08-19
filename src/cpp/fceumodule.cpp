@@ -1,6 +1,6 @@
 #include <stdio.h>
 
-#include "fceuxmodule.h"
+#include "fceumodule.h"
 
 // Python error for when a file is not a valid ROM format.
 static PyObject *InvalidRomError;
@@ -16,13 +16,13 @@ uint32 input;
 
 static bool gameLoaded;
 
-// Load a rom and, optionally, start recording an fceux movie. Since the emulation is
+// Load a rom and, optionally, start recording an fceu movie. Since the emulation is
 // deterministic, the movie only needs to save the controller input at each frame. The movie can be
-// replayed in the fceux emulator by running:
-// fceux --playmov <movie_file_name> <rom_file_name>
+// replayed in the fceu emulator by running:
+// fceu --playmov <movie_file_name> <rom_file_name>
 //
 // Arguments: romFileName, movieFileName
-static PyObject * fceux_load_game(PyObject *self, PyObject *args) {
+static PyObject * fceu_load_game(PyObject *self, PyObject *args) {
   char * romFileName;
   char * movieFileName = "";
 
@@ -53,7 +53,7 @@ static void set_game_error_msg() {
   PyErr_SetString(IllegalStateError, msg);
 }
 
-static PyObject * fceux_load_state(PyObject *self, PyObject *args) {
+static PyObject * fceu_load_state(PyObject *self, PyObject *args) {
   char * stateFileName;
 
   // parse arguments
@@ -73,7 +73,7 @@ static PyObject * fceux_load_state(PyObject *self, PyObject *args) {
 }
 
 // Close a game and, if a movie is recording, stop recording the movie.
-static PyObject * fceux_close_game(PyObject *self, PyObject *args) {
+static PyObject * fceu_close_game(PyObject *self, PyObject *args) {
   // parse arguments
   if (!PyArg_ParseTuple(args, "")) {
     return NULL;
@@ -86,7 +86,7 @@ static PyObject * fceux_close_game(PyObject *self, PyObject *args) {
   return Py_None;
 }
 
-static PyObject * fceux_save_state(PyObject *self, PyObject *args) {
+static PyObject * fceu_save_state(PyObject *self, PyObject *args) {
   char * stateFileName;
 
   // parse arguments
@@ -114,9 +114,11 @@ static long int dims[] = {240, 256, 3};
 // Arguments: integer representing controller input for the frame. See comment above the input
 // variable for details.
 // Returns: NumPy array with shape dims and type uint8, containing the pixel data.
-static PyObject * fceux_emulate_frame(PyObject *self, PyObject *args) {
+static PyObject * fceu_emulate_frame(PyObject *self, PyObject *args) {
+  uint8 frames = 1;
+
   // parse arguments
-  if (!PyArg_ParseTuple(args, "I", &input)) {
+  if (!PyArg_ParseTuple(args, "I|B", &input, &frames)) {
     return NULL;
   }
 
@@ -128,7 +130,9 @@ static PyObject * fceux_emulate_frame(PyObject *self, PyObject *args) {
   uint8 *gfx;
   int32 *sound;
   int32 ssize;
-  FCEUI_Emulate(&gfx, &sound, &ssize, 0);
+  for (uint8 i = 0; i < frames; i++) {
+    FCEUI_Emulate(&gfx, &sound, &ssize, 0);
+  }
 
   PyObject *array = PyArray_SimpleNew(3, dims, NPY_UINT8);
   uint8 *data = (unsigned char *) PyArray_DATA(array);
@@ -150,7 +154,7 @@ static PyObject * fceux_emulate_frame(PyObject *self, PyObject *args) {
 //
 // Arguments: uint16 representing the memory address.
 // Returns: uint8 representing the memory value.
-static PyObject * fceux_read_memory(PyObject *self, PyObject *args) {
+static PyObject * fceu_read_memory(PyObject *self, PyObject *args) {
   uint16 memAddress;
 
   // parse arguments
@@ -165,13 +169,13 @@ static PyObject * fceux_read_memory(PyObject *self, PyObject *args) {
 
   // read memory
   uint8 memValue = GetMem(memAddress);
-  return Py_BuildValue("I", memValue);
+  return Py_BuildValue("B", memValue);
 }
 
 static bool search_initialized;
 static int16 memoryValues[0x0800];
 
-static PyObject * fceux_init_memory_search(PyObject *self, PyObject *args) {
+static PyObject * fceu_init_memory_search(PyObject *self, PyObject *args) {
   // parse arguments
   if (!PyArg_ParseTuple(args, "")) {
     return NULL;
@@ -196,7 +200,7 @@ static void set_memory_error_msg() {
   PyErr_SetString(IllegalStateError, msg);
 }
 
-static PyObject * fceux_match_unchanged(PyObject *self, PyObject *args) {
+static PyObject * fceu_match_unchanged(PyObject *self, PyObject *args) {
   // parse arguments
   if (!PyArg_ParseTuple(args, "")) {
     return NULL;
@@ -229,7 +233,7 @@ static PyObject * fceux_match_unchanged(PyObject *self, PyObject *args) {
   return Py_BuildValue("H", count);
 }
 
-static PyObject * fceux_match_changed(PyObject *self, PyObject *args) {
+static PyObject * fceu_match_changed(PyObject *self, PyObject *args) {
   // parse arguments
   if (!PyArg_ParseTuple(args, "")) {
     return NULL;
@@ -263,7 +267,7 @@ static PyObject * fceux_match_changed(PyObject *self, PyObject *args) {
   return Py_BuildValue("H", count);
 }
 
-static PyObject * fceux_match_equals(PyObject *self, PyObject *args) {
+static PyObject * fceu_match_equals(PyObject *self, PyObject *args) {
   uint8 filterValue;
   // parse arguments
   if (!PyArg_ParseTuple(args, "B", &filterValue)) {
@@ -298,7 +302,7 @@ static PyObject * fceux_match_equals(PyObject *self, PyObject *args) {
   return Py_BuildValue("H", count);
 }
 
-static PyObject * fceux_get_matches(PyObject *self, PyObject *args) {
+static PyObject * fceu_get_matches(PyObject *self, PyObject *args) {
   // parse arguments
   if (!PyArg_ParseTuple(args, "")) {
     return NULL;
@@ -328,36 +332,36 @@ static PyObject * fceux_get_matches(PyObject *self, PyObject *args) {
   return matches;
 }
 
-// List of fceux module methods.
+// List of fceu module methods.
 static PyMethodDef FceuxMethods[] = {
-  { "load_game", fceux_load_game, METH_VARARGS, "Load NES game." },
-  { "load_state", fceux_load_state, METH_VARARGS, "Load NES savestate." },
-  { "close_game", fceux_close_game, METH_VARARGS, "Close loaded NES game." },
-  { "save_state", fceux_save_state, METH_VARARGS, "Save NES savestate." },
-  { "emulate_frame", fceux_emulate_frame, METH_VARARGS, "Emulate a single frame." },
-  { "read_memory", fceux_read_memory, METH_VARARGS, "Read the value at the given memory address." },
-  { "init_memory_search", fceux_init_memory_search, METH_VARARGS, "Initialize a search of memory values." },
-  { "match_unchanged", fceux_match_unchanged, METH_VARARGS, "Matches memory values unchanged since the last search operation." },
-  { "match_changed", fceux_match_changed, METH_VARARGS, "Matches memory values changed since the last search operation." },
-  { "match_equals", fceux_match_equals, METH_VARARGS, "Matches memory values equal to a target value." },
-  { "get_matches", fceux_get_matches, METH_VARARGS, "Get the results of the memory search." },
+  { "load_game", fceu_load_game, METH_VARARGS, "Load NES game." },
+  { "load_state", fceu_load_state, METH_VARARGS, "Load NES savestate." },
+  { "close_game", fceu_close_game, METH_VARARGS, "Close loaded NES game." },
+  { "save_state", fceu_save_state, METH_VARARGS, "Save NES savestate." },
+  { "emulate_frame", fceu_emulate_frame, METH_VARARGS, "Emulate a single frame." },
+  { "read_memory", fceu_read_memory, METH_VARARGS, "Read the value at the given memory address." },
+  { "init_memory_search", fceu_init_memory_search, METH_VARARGS, "Initialize a search of memory values." },
+  { "match_unchanged", fceu_match_unchanged, METH_VARARGS, "Matches memory values unchanged since the last search operation." },
+  { "match_changed", fceu_match_changed, METH_VARARGS, "Matches memory values changed since the last search operation." },
+  { "match_equals", fceu_match_equals, METH_VARARGS, "Matches memory values equal to a target value." },
+  { "get_matches", fceu_get_matches, METH_VARARGS, "Get the results of the memory search." },
   { NULL, NULL, 0, NULL }
 };
 
-// Initialize the fceux module.
-PyMODINIT_FUNC initfceux(void)
+// Initialize the fceu module.
+PyMODINIT_FUNC initfceu(void)
 {
   PyObject *m;
-  m = Py_InitModule("fceux", FceuxMethods);
+  m = Py_InitModule("fceu", FceuxMethods);
   if (m == NULL) {
     return;
   }
 
-  InvalidRomError = PyErr_NewException("fceux.invalid_rom", NULL, NULL);
+  InvalidRomError = PyErr_NewException("fceu.invalid_rom", NULL, NULL);
   Py_INCREF(InvalidRomError);
   PyModule_AddObject(m, "error", InvalidRomError);
 
-  IllegalStateError = PyErr_NewException("fceux.illegal_state", NULL, NULL);
+  IllegalStateError = PyErr_NewException("fceu.illegal_state", NULL, NULL);
   Py_INCREF(IllegalStateError);
   PyModule_AddObject(m, "error", IllegalStateError);
 

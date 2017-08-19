@@ -5,7 +5,7 @@
 #include "fceux/movie.h"
 #include "fceux/palette.h"
 
-// Forward declaration of required FCEUX functions.
+// Forward declaration of required FCEU functions.
 bool FCEUI_Initialize();
 void FCEUI_SetInput(int port, ESI type, void *ptr, int attrib);
 FCEUGI *FCEUI_LoadGame(const char *name, int OverwriteVidMode, bool silent = false);
