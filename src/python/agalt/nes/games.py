@@ -1,9 +1,9 @@
 from agalt.game import Game
 from agalt.nes.emu import FCEU
-from enum import Enum
+from enum import IntEnum
 import math
 
-class SuperMarioBros(Enum):
+class SuperMarioBros(IntEnum):
     LIVES = 0x75A
     SIZE = 0x756
     STAGE = 0x75C

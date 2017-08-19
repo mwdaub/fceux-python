@@ -6,12 +6,12 @@ class Game(object):
         self._reward_fn = reward_fn
         self._gameover_fn = gameover_fn
         self._gameover = False
-        self._state = {k: self._emu.read_memory(k.value) for k in self._state_vars}
+        self._state = {k: self._emu.read_memory(k) for k in self._state_vars}
         self.perform_actions(init_actions)
 
     def perform_action(self, action):
         pixels = self._emu.emulate_frame(action)
-        curr_state = {k: self._emu.read_memory(k.value) for k in self._state_vars}
+        curr_state = {k: self._emu.read_memory(k) for k in self._state_vars}
         prev_state = self._state
         state_diff = {k: v - prev_state[k] for k, v in curr_state.iteritems()}
         reward = self._reward_fn(curr_state, prev_state, state_diff)
