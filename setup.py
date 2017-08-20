@@ -7,7 +7,7 @@ sources = ['src/cpp/fceumodule.cpp']
 libraries = ['fceux', 'SDL']
 library_dirs =  ['/usr/local/lib', '/usr/lib', 'src/cpp/fceux']
 
-module1 = Extension('fceu',
+module1 = Extension('agalt.nes.fceu',
         define_macros = [('PSS_STYLE', '1')],
         sources = sources,
         libraries = libraries,

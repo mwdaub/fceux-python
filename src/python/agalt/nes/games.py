@@ -1,5 +1,5 @@
 from agalt.game import Game
-from agalt.nes.emu import FCEU
+from agalt.nes.fceu import FCEU
 from enum import IntEnum
 import math
 
