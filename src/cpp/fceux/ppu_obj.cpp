@@ -1300,24 +1300,24 @@ void PPU::Power(void) {
 	Reset();
 
 	for (x = 0x2000; x < 0x4000; x += 8) {
-		(*ARead)[x] = &A200x;
-		(*BWrite)[x] = &B2000;
-		(*ARead)[x + 1] = &A200x;
-		(*BWrite)[x + 1] = &B2001;
-		(*ARead)[x + 2] = &A2002;
-		(*BWrite)[x + 2] = &B2002;
-		(*ARead)[x + 3] = &A200x;
-		(*BWrite)[x + 3] = &B2003;
-		(*ARead)[x + 4] = &A2004;
-		(*BWrite)[x + 4] = &B2004;
-		(*ARead)[x + 5] = &A200x;
-		(*BWrite)[x + 5] = &B2005;
-		(*ARead)[x + 6] = &A200x;
-		(*BWrite)[x + 6] = &B2006;
-		(*ARead)[x + 7] = &A2007;
-		(*BWrite)[x + 7] = &B2007;
+		ARead[x] = &A200x_;
+		BWrite[x] = &B2000_;
+		ARead[x + 1] = &A200x_;
+		BWrite[x + 1] = &B2001_;
+		ARead[x + 2] = &A2002_;
+		BWrite[x + 2] = &B2002_;
+		ARead[x + 3] = &A200x_;
+		BWrite[x + 3] = &B2003_;
+		ARead[x + 4] = &A2004_;
+		BWrite[x + 4] = &B2004_;
+		ARead[x + 5] = &A200x_;
+		BWrite[x + 5] = &B2005_;
+		ARead[x + 6] = &A200x_;
+		BWrite[x + 6] = &B2006_;
+		ARead[x + 7] = &A2007_;
+		BWrite[x + 7] = &B2007_;
 	}
-	(*BWrite)[0x4014] = &B4014;
+	BWrite[0x4014] = &B4014_;
 }
 
 int PPU::Loop(int skip) {

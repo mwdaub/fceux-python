@@ -25,7 +25,7 @@ void Emulator::CloseGame(void) {
 		}
 
 		if (GameInfo->name) {
-			free(GameInfo->name);
+            FCEU::free(GameInfo->name);
 			GameInfo->name = NULL;
 		}
 
@@ -62,9 +62,9 @@ void Emulator::CloseGame(void) {
 }
 
 int Emulator::AllocGenieRW(void) {
-	if (!(AReadG = (readfunc*)FCEU::malloc(0x8000 * sizeof(readfunc))))
+	if (!(AReadG = (readfunc**)FCEU::malloc(0x8000 * sizeof(readfunc*))))
 		return 0;
-	if (!(BWriteG = (writefunc*)FCEU::malloc(0x8000 * sizeof(writefunc))))
+	if (!(BWriteG = (writefunc**)FCEU::malloc(0x8000 * sizeof(writefunc*))))
 		return 0;
 	RWWrap = 1;
 	return 1;
@@ -78,26 +78,26 @@ void Emulator::FlushGenieRW(void) {
 			ARead[x + 0x8000] = AReadG[x];
 			BWrite[x + 0x8000] = BWriteG[x];
 		}
-		free(AReadG);
-		free(BWriteG);
+        FCEU::free(AReadG);
+        FCEU::free(BWriteG);
 		AReadG = NULL;
 		BWriteG = NULL;
 		RWWrap = 0;
 	}
 }
 
-readfunc Emulator::GetReadHandler(int32 a) {
+readfunc* Emulator::GetReadHandler(int32 a) {
 	if (a >= 0x8000 && RWWrap)
 		return AReadG[a - 0x8000];
 	else
 		return ARead[a];
 }
 
-void Emulator::SetReadHandler(int32 start, int32 end, readfunc func) {
+void Emulator::SetReadHandler(int32 start, int32 end, readfunc* func) {
 	int32 x;
 
 	if (!func)
-		func = PPU::ANull;
+		func = &(ppu->ANull_);
 
 	if (RWWrap)
 		for (x = end; x >= start; x--) {
@@ -111,18 +111,18 @@ void Emulator::SetReadHandler(int32 start, int32 end, readfunc func) {
 			ARead[x] = func;
 }
 
-writefunc Emulator::GetWriteHandler(int32 a) {
+writefunc* Emulator::GetWriteHandler(int32 a) {
 	if (RWWrap && a >= 0x8000)
 		return BWriteG[a - 0x8000];
 	else
 		return BWrite[a];
 }
 
-void Emulator::SetWriteHandler(int32 start, int32 end, writefunc func) {
+void Emulator::SetWriteHandler(int32 start, int32 end, writefunc* func) {
 	int32 x;
 
 	if (!func)
-		func = PPU::BNull;
+		func = &(ppu->BNull_);
 
 	if (RWWrap)
 		for (x = end; x >= start; x--) {
@@ -487,14 +487,14 @@ void Emulator::PowerNES(void) {
 
 	MemoryRand(RAM, 0x800);
 
-	SetReadHandler(0x0000, 0xFFFF, PPU::ANull);
-	SetWriteHandler(0x0000, 0xFFFF, PPU::BNull);
+	SetReadHandler(0x0000, 0xFFFF, &(ppu->ANull_));
+	SetWriteHandler(0x0000, 0xFFFF, &(ppu->BNull_));
 
-	SetReadHandler(0, 0x7FF, PPU::ARAML);
-	SetWriteHandler(0, 0x7FF, PPU::BRAML);
+	SetReadHandler(0, 0x7FF, &(ppu->ARAML_));
+	SetWriteHandler(0, 0x7FF, &(ppu->BRAML_));
 
-	SetReadHandler(0x800, 0x1FFF, PPU::ARAMH);	// Part of a little
-	SetWriteHandler(0x800, 0x1FFF, PPU::BRAMH);	//hack for a small speed boost.
+	SetReadHandler(0x800, 0x1FFF, &(ppu->ARAMH_));	// Part of a little
+	SetWriteHandler(0x800, 0x1FFF, &(ppu->BRAMH_));	//hack for a small speed boost.
 
 	InitializeInput();
 	FCEUSND_Power();
@@ -617,7 +617,7 @@ void Emulator::UpdateAutosave(void) {
 		f = strdup(FCEU::MakeFName(FCEUMKF_AUTOSTATE, AutosaveIndex, 0).c_str());
 		FCEUSS_Save(f, false);
 		AutoSS = true;  //Flag that an auto-savestate was made
-		free(f);
+        FCEU::free(f);
         f = NULL;
 		AutosaveStatus[AutosaveIndex] = 1;
 	}
@@ -631,7 +631,7 @@ void Emulator::RewindToLastAutosave(void) {
 		char * f;
 		f = strdup(FCEU::MakeFName(FCEUMKF_AUTOSTATE, AutosaveIndex, 0).c_str());
 		FCEUSS_Load(f);
-		free(f);
+        FCEU::free(f);
         f = NULL;
 
 		//Set pointer to previous available slot

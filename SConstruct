@@ -184,6 +184,7 @@ if env['FRAMESKIP']:
 
 if env['LIB']:
   env.Append(CCFLAGS = "-fPIC")
+  env.Append(CCFLAGS = "-std=c++11")
   env.Append(CPPDEFINES = "FCEU_LIB")
 
 print "base CPPDEFINES:",env['CPPDEFINES']

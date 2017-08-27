@@ -43,12 +43,12 @@ static uint8 CycTable[256] = {
 
 uint8 X6502::DMR(uint32 A) {
   ADDCYC(1);
-  return (DB_=(*ARead)[A](ppu, A));
+  return (DB_=(*ARead[A])(A));
 }
 
 void X6502::DMW(uint32 A, uint8 V) {
   ADDCYC(1);
-  (*BWrite)[A](ppu,A,V);
+  (*BWrite[A])(A,V);
 }
 
 /* Some of these operations will only make sense if you know what the flag

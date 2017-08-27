@@ -4,6 +4,7 @@
 #include <cstring>
 #include <cstdio>
 #include <cstdlib>
+#include <functional>
 
 #include "types_obj.h"
 #include "git_obj.h"
@@ -323,8 +324,8 @@ class PPU {
     bool* DMC_7bit;
     bool* paldeemphswap;
 
-    ppureadfunc FFCEUX_PPURead;
-    ppuwritefunc FFCEUX_PPUWrite;
+    readfunc* FFCEUX_PPURead;
+    writefunc* FFCEUX_PPUWrite;
 
     void (*GameHBIRQHook)(void), (*GameHBIRQHook2)(void);
     void (*PPU_hook)(uint32 A);
@@ -362,7 +363,7 @@ class PPU {
     int GetAttr(int ntnum, int xt, int yt);
     void getScroll(int &xpos, int &ypos);
 
-    void ResetHooks() { FFCEUX_PPURead = Read_Default; }
+    void ResetHooks() { FFCEUX_PPURead = &Read_Default_; }
 
     inline uint8 VBlankON() { return data[0] & 0x80; };	//Generate VBlank NMI
     inline uint8 Sprite16() { return data[0] & 0x20; };	//Sprites 8x16/8x8
@@ -387,17 +388,17 @@ class PPU {
     inline uint8* MMC5SPRVRAMADR(int V) { return &MMC5SPRVPage[V >> 10][V]; };
     inline uint8* VRAMADR(int V) { return &VPage[V >> 10][V]; };
 
-    inline uint8 Read(uint32 A) { return FFCEUX_PPURead(this, A); };
-    inline void Write(uint32 A, uint8 V) { FFCEUX_PPUWrite ? FFCEUX_PPUWrite(this, A, V) : Write_Default(A, V); };
+    inline uint8 Read(uint32 A) { return (*FFCEUX_PPURead)(A); };
+    inline void Write(uint32 A, uint8 V) { FFCEUX_PPUWrite ? (*FFCEUX_PPUWrite)(A, V) : Write_Default(A, V); };
 
     inline int GETLASTPIXEL() { return PAL ? ((x6502->timestamp() * 48 - linestartts) / 15) : ((x6502->timestamp() * 48 - linestartts) >> 4); };
 
-    static uint8 ANull(PPU* ppu, uint32 A) { return(ppu->x6502->DB()); };
-    static void BNull(PPU* ppu, uint32 A, uint8 V) {};
-    static void BRAML(PPU* ppu, uint32 A, uint8 V) { (*(ppu->RAM))[A] = V; };
-    static void BRAMH(PPU* ppu, uint32 A, uint8 V) { (*(ppu->RAM))[A & 0x7FF] = V; };
-    static uint8 ARAML(PPU* ppu, uint32 A) { return (*(ppu->RAM))[A]; };
-    static uint8 ARAMH(PPU* ppu, uint32 A) { return (*(ppu->RAM))[A & 0x7FF]; };
+    readfunc ANull_ = [this](uint32 A) { return(this->x6502->DB()); };
+    writefunc BNull_ = [this](uint32 A, uint8 V) {};
+    writefunc BRAML_ = [this](uint32 A, uint8 V) { (*(this->RAM))[A] = V; };
+    writefunc BRAMH_ = [this](uint32 A, uint8 V) { (*(this->RAM))[A & 0x7FF] = V; };
+    readfunc  ARAML_ = [this](uint32 A) { return (*(this->RAM))[A]; };
+    readfunc ARAMH_ = [this](uint32 A) { return (*(this->RAM))[A & 0x7FF]; };
 
   private:
     // Members.
@@ -573,9 +574,7 @@ class PPU {
 
     uint8 FASTCALL Read_Default(uint32 A);
     void Write_Default(uint32 A, uint8 V);
-    static uint8 FASTCALL Read_Default(PPU* ppu, uint32 A) {
-      return ppu->Read_Default(A);
-    }
+    readfunc Read_Default_ = [this](uint32 A) { return this->Read_Default(A); };
 
     int GetCHRAddress(int A);
 
@@ -593,19 +592,19 @@ class PPU {
     void B2007(uint32 A, uint8 V);
     void B4014(uint32 A, uint8 V);
 
-    static uint8 A2002(PPU* ppu, uint32 A) { return ppu->A2002(A); };
-    static uint8 A2004(PPU* ppu, uint32 A) { return ppu->A2004(A); };
-    static uint8 A200x(PPU* ppu, uint32 A) { return ppu->A200x(A); };
-    static uint8 A2007(PPU* ppu, uint32 A) { return ppu->A2007(A); };
-    static void B2000(PPU* ppu, uint32 A, uint8 V) { return ppu->B2000(A, V); };
-    static void B2001(PPU* ppu, uint32 A, uint8 V) { return ppu->B2001(A, V); };
-    static void B2002(PPU* ppu, uint32 A, uint8 V) { return ppu->B2002(A, V); };
-    static void B2003(PPU* ppu, uint32 A, uint8 V) { return ppu->B2003(A, V); };
-    static void B2004(PPU* ppu, uint32 A, uint8 V) { return ppu->B2004(A, V); };
-    static void B2005(PPU* ppu, uint32 A, uint8 V) { return ppu->B2005(A, V); };
-    static void B2006(PPU* ppu, uint32 A, uint8 V) { return ppu->B2006(A, V); };
-    static void B2007(PPU* ppu, uint32 A, uint8 V) { return ppu->B2007(A, V); };
-    static void B4014(PPU* ppu, uint32 A, uint8 V) { return ppu->B4014(A, V); };
+    readfunc A2002_ = [this](uint32 A) { return this->A2002(A); };
+    readfunc A2004_ = [this](uint32 A) { return this->A2004(A); };
+    readfunc A200x_ = [this](uint32 A) { return this->A200x(A); };
+    readfunc A2007_ = [this](uint32 A) { return this->A2007(A); };
+    writefunc B2000_ = [this](uint32 A, uint8 V) { this->B2000(A, V); };
+    writefunc B2001_ = [this](uint32 A, uint8 V) { this->B2001(A, V); };
+    writefunc B2002_ = [this](uint32 A, uint8 V) { this->B2002(A, V); };
+    writefunc B2003_ = [this](uint32 A, uint8 V) { this->B2003(A, V); };
+    writefunc B2004_ = [this](uint32 A, uint8 V) { this->B2004(A, V); };
+    writefunc B2005_ = [this](uint32 A, uint8 V) { this->B2005(A, V); };
+    writefunc B2006_ = [this](uint32 A, uint8 V) { this->B2006(A, V); };
+    writefunc B2007_ = [this](uint32 A, uint8 V) { this->B2007(A, V); };
+    writefunc B4014_ = [this](uint32 A, uint8 V) { this->B4014(A, V); };
 
     void ResetRL(uint8 *target);
 

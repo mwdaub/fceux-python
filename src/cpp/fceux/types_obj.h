@@ -22,6 +22,8 @@
 #ifndef __FCEU_TYPES
 #define __FCEU_TYPES
 
+#include <functional>
+
 //enables a hack designed for debugging dragon warrior 3 which treats BRK as a 3-byte opcode
 //#define BRK_3BYTE_HACK
 
@@ -136,8 +138,8 @@ namespace FCEU {
 class PPU;
 }
 
-typedef void (*writefunc)(FCEU::PPU* ppu, uint32 A, uint8 V);
-typedef uint8 (*readfunc)(FCEU::PPU* ppu, uint32 A);
+typedef std::function<void(uint32,uint8)> writefunc;
+typedef std::function<uint8(uint32)> readfunc;
 
 #ifndef CTASSERT
 #define CTASSERT(x)  typedef char __assert ## y[(x) ? 1 : -1];

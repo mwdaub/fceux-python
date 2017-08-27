@@ -33,8 +33,6 @@
 
 namespace FCEU {
 
-class PPU;
-
 class X6502 {
   public:
     void Run(int32 cycles);
@@ -73,7 +71,6 @@ class X6502 {
     #endif
 
   private:
-    PPU* ppu;
     uint8** RAM;
 
     readfunc* ARead[0x10000];
@@ -121,9 +118,9 @@ class X6502 {
     inline uint8 POP() { return RdRAM(0x100 + (++S_)); };
 
     //normal memory read
-    inline uint8 RdMem(unsigned int A) { return(DB_=(*ARead)[A](ppu, A)); };
-    inline void WrMem(unsigned int A, uint8 V) { (*BWrite)[A](ppu,A,V); };
-    inline uint8 RdRAM(unsigned int A) { return(DB_=(*ARead)[A](ppu, A)); };
+    inline uint8 RdMem(unsigned int A) { return(DB_=(*ARead[A])(A)); };
+    inline void WrMem(unsigned int A, uint8 V) { (*BWrite[A])(A,V); };
+    inline uint8 RdRAM(unsigned int A) { return(DB_=(*ARead[A])(A)); };
     inline void WrRAM(unsigned int A, uint8 V) { (*RAM)[A]=V; };
 };
 

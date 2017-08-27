@@ -72,10 +72,10 @@ class Emulator {
     void CloseGame(void);
 
     void MemoryRand(uint8 *ptr, uint32 size);
-    void SetReadHandler(int32 start, int32 end, readfunc func);
-    void SetWriteHandler(int32 start, int32 end, writefunc func);
-    writefunc GetWriteHandler(int32 a);
-    readfunc GetReadHandler(int32 a);
+    void SetReadHandler(int32 start, int32 end, readfunc* func);
+    void SetWriteHandler(int32 start, int32 end, writefunc* func);
+    writefunc* GetWriteHandler(int32 a);
+    readfunc* GetReadHandler(int32 a);
 
     int AllocGenieRW(void);
     void FlushGenieRW(void);
@@ -127,10 +127,10 @@ class Emulator {
     int PAL;
     int pal_emulation;
 
-    readfunc ARead[0x10000];
-    writefunc BWrite[0x10000];
-    readfunc* AReadG;
-    writefunc* BWriteG;
+    readfunc* ARead[0x10000];
+    writefunc* BWrite[0x10000];
+    readfunc** AReadG;
+    writefunc** BWriteG;
     int RWWrap;
 
     bool overclock_enabled;
