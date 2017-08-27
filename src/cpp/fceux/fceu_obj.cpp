@@ -61,81 +61,6 @@ void Emulator::CloseGame(void) {
 	}
 }
 
-int Emulator::AllocGenieRW(void) {
-	if (!(AReadG = (readfunc**)FCEU::malloc(0x8000 * sizeof(readfunc*))))
-		return 0;
-	if (!(BWriteG = (writefunc**)FCEU::malloc(0x8000 * sizeof(writefunc*))))
-		return 0;
-	RWWrap = 1;
-	return 1;
-}
-
-void Emulator::FlushGenieRW(void) {
-	int32 x;
-
-	if (RWWrap) {
-		for (x = 0; x < 0x8000; x++) {
-			ARead[x + 0x8000] = AReadG[x];
-			BWrite[x + 0x8000] = BWriteG[x];
-		}
-        FCEU::free(AReadG);
-        FCEU::free(BWriteG);
-		AReadG = NULL;
-		BWriteG = NULL;
-		RWWrap = 0;
-	}
-}
-
-readfunc* Emulator::GetReadHandler(int32 a) {
-	if (a >= 0x8000 && RWWrap)
-		return AReadG[a - 0x8000];
-	else
-		return ARead[a];
-}
-
-void Emulator::SetReadHandler(int32 start, int32 end, readfunc* func) {
-	int32 x;
-
-	if (!func)
-		func = &(ppu->ANull_);
-
-	if (RWWrap)
-		for (x = end; x >= start; x--) {
-			if (x >= 0x8000)
-				AReadG[x - 0x8000] = func;
-			else
-				ARead[x] = func;
-		}
-	else
-		for (x = end; x >= start; x--)
-			ARead[x] = func;
-}
-
-writefunc* Emulator::GetWriteHandler(int32 a) {
-	if (RWWrap && a >= 0x8000)
-		return BWriteG[a - 0x8000];
-	else
-		return BWrite[a];
-}
-
-void Emulator::SetWriteHandler(int32 start, int32 end, writefunc* func) {
-	int32 x;
-
-	if (!func)
-		func = &(ppu->BNull_);
-
-	if (RWWrap)
-		for (x = end; x >= start; x--) {
-			if (x >= 0x8000)
-				BWriteG[x - 0x8000] = func;
-			else
-				BWrite[x] = func;
-		}
-	else
-		for (x = end; x >= start; x--)
-			BWrite[x] = func;
-}
-
 void Emulator::ResetGameLoaded(void) {
 	if (GameInfo) CloseGame();
 	EmulationPaused_ = 0; //mbg 5/8/08 - loading games while paused was bad news. maybe this fixes it
@@ -487,18 +412,9 @@ void Emulator::PowerNES(void) {
 
 	MemoryRand(RAM, 0x800);
 
-	SetReadHandler(0x0000, 0xFFFF, &(ppu->ANull_));
-	SetWriteHandler(0x0000, 0xFFFF, &(ppu->BNull_));
-
-	SetReadHandler(0, 0x7FF, &(ppu->ARAML_));
-	SetWriteHandler(0, 0x7FF, &(ppu->BRAML_));
-
-	SetReadHandler(0x800, 0x1FFF, &(ppu->ARAMH_));	// Part of a little
-	SetWriteHandler(0x800, 0x1FFF, &(ppu->BRAMH_));	//hack for a small speed boost.
-
+	ppu->Power();
 	InitializeInput();
 	FCEUSND_Power();
-	ppu->Power();
 
 	//Have the external game hardware "powered" after the internal NES stuff.  Needed for the NSF code and VS System code.
 	GameInterface(GI_POWER);

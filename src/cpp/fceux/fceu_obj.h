@@ -20,6 +20,7 @@
 #include "cheat_obj.h"
 #include "fds_obj.h"
 #include "file_obj.h"
+#include "handler_obj.h"
 #include "ines_obj.h"
 #include "movie_obj.h"
 #include "nsf_obj.h"
@@ -72,13 +73,6 @@ class Emulator {
     void CloseGame(void);
 
     void MemoryRand(uint8 *ptr, uint32 size);
-    void SetReadHandler(int32 start, int32 end, readfunc* func);
-    void SetWriteHandler(int32 start, int32 end, writefunc* func);
-    writefunc* GetWriteHandler(int32 a);
-    readfunc* GetReadHandler(int32 a);
-
-    int AllocGenieRW(void);
-    void FlushGenieRW(void);
 
     void ResetVidSys(void);
 
@@ -111,6 +105,7 @@ class Emulator {
 
   private:
     // Members.
+    Handler handler;
     PPU* ppu;
     X6502* x6502;
 
@@ -126,12 +121,6 @@ class Emulator {
     int dendy;
     int PAL;
     int pal_emulation;
-
-    readfunc* ARead[0x10000];
-    writefunc* BWrite[0x10000];
-    readfunc** AReadG;
-    writefunc** BWriteG;
-    int RWWrap;
 
     bool overclock_enabled;
     bool overclocking;

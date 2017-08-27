@@ -1291,7 +1291,6 @@ void PPU::Reset(void) {
 }
 
 void PPU::Power(void) {
-	int x;
 
 	memset(NTARAM, 0x00, 0x800);
 	memset(PALRAM, 0x00, 0x20);
@@ -1299,25 +1298,34 @@ void PPU::Power(void) {
 	memset(SPRAM, 0x00, 0x100);
 	Reset();
 
-	for (x = 0x2000; x < 0x4000; x += 8) {
-		ARead[x] = &A200x_;
-		BWrite[x] = &B2000_;
-		ARead[x + 1] = &A200x_;
-		BWrite[x + 1] = &B2001_;
-		ARead[x + 2] = &A2002_;
-		BWrite[x + 2] = &B2002_;
-		ARead[x + 3] = &A200x_;
-		BWrite[x + 3] = &B2003_;
-		ARead[x + 4] = &A2004_;
-		BWrite[x + 4] = &B2004_;
-		ARead[x + 5] = &A200x_;
-		BWrite[x + 5] = &B2005_;
-		ARead[x + 6] = &A200x_;
-		BWrite[x + 6] = &B2006_;
-		ARead[x + 7] = &A2007_;
-		BWrite[x + 7] = &B2007_;
+	handler->SetReadHandler(0x0000, 0xFFFF, &ANull_);
+	handler->SetWriteHandler(0x0000, 0xFFFF, &BNull_);
+
+	handler->SetReadHandler(0, 0x7FF, &ARAML_);
+	handler->SetWriteHandler(0, 0x7FF, &BRAML_);
+
+	handler->SetReadHandler(0x800, 0x1FFF, &ARAMH_);	// Part of a little
+	handler->SetWriteHandler(0x800, 0x1FFF, &BRAMH_);	//hack for a small speed boost.
+
+	for (int x = 0x2000; x < 0x4000; x += 8) {
+		handler->SetReadHandler(x, &A200x_);
+		handler->SetWriteHandler(x, &B2000_);
+		handler->SetReadHandler(x + 1, &A200x_);
+		handler->SetWriteHandler(x + 1, &B2001_);
+		handler->SetReadHandler(x + 2, &A2002_);
+		handler->SetWriteHandler(x + 2, &B2002_);
+		handler->SetReadHandler(x + 3, &A200x_);
+		handler->SetWriteHandler(x + 3, &B2003_);
+		handler->SetReadHandler(x + 4, &A2004_);
+		handler->SetWriteHandler(x + 4, &B2004_);
+		handler->SetReadHandler(x + 5, &A200x_);
+		handler->SetWriteHandler(x + 5, &B2005_);
+		handler->SetReadHandler(x + 6, &A200x_);
+		handler->SetWriteHandler(x + 6, &B2006_);
+		handler->SetReadHandler(x + 7, &A2007_);
+		handler->SetWriteHandler(x + 7, &B2007_);
 	}
-	BWrite[0x4014] = &B4014_;
+    handler->SetWriteHandler(0x4014, &B4014_);
 }
 
 int PPU::Loop(int skip) {

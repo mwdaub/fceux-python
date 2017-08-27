@@ -13,6 +13,7 @@
 #include "utils/memory_obj.h"
 
 #include "cart_obj.h"
+#include "handler_obj.h"
 #include "input_obj.h"
 #include "nsf_obj.h"
 #include "palette_obj.h"
@@ -404,11 +405,10 @@ class PPU {
     // Members.
     static BITREVLUT<uint8, 8> bitrevlut;
 
+    Handler* handler;
+
     X6502* x6502;
     uint8** RAM;
-
-    readfunc* ARead[0x10000];
-    writefunc* BWrite[0x10000];
 
     bool overclock_enabled;
     bool overclocking;
