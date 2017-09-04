@@ -20,7 +20,7 @@
 
 #include "x6502_obj.h"
 
-namespace FCEU {
+namespace fceu {
 
 static uint8 CycTable[256] = {
 /*0x00*/ 7,6,2,8,3,3,5,5,3,2,2,2,4,4,6,6,
@@ -502,4 +502,4 @@ const uint8 opwrite[256] = {
 /*0xF0*/	 0, 0, 0, 9, 0, 0, 9, 9, 0, 0, 0, 9, 0, 0, 9, 9,
 };
 
-}
+} // namespace fceu

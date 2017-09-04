@@ -7,7 +7,7 @@
 
 #include "../types_obj.h"
 
-namespace FCEU {
+namespace fceu {
 
 #define FCEU_dwmemset(d,c,n) {int _x; for(_x=n-4;_x>=0;_x-=4) *(uint32 *)&(d)[_x]=c;}
 
@@ -22,6 +22,6 @@ void memmove(void *d, void *s, uint32 l);
 void* dmalloc(uint32 size);
 void dfree(void *ptr);
 
-}
+} // namespace fceu
 
 #endif // define _MEMORY_H_

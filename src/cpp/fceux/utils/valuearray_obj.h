@@ -1,7 +1,7 @@
 #ifndef _VALUEARRAY_H_
 #define _VALUEARRAY_H_
 
-namespace FCEU {
+namespace fceu {
 
 template<typename T, int N>
 struct ValueArray
@@ -19,6 +19,6 @@ struct ValueArray
 	}
 };
 
-} // namespace FCEU
+} // namespace fceu
 
 #endif // define _VALUEARRAY_H_

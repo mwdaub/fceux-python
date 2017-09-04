@@ -28,7 +28,7 @@
 
 #include "cart_obj.h"
 
-namespace FCEU {
+namespace fceu {
 
 struct TMasterRomInfo
 {
@@ -279,6 +279,6 @@ void Mapper252_Init(CartInfo *);
 void Mapper253_Init(CartInfo *);
 void Mapper254_Init(CartInfo *);
 
-} // namespace FCEU
+} // namespace fceu
 
 #endif

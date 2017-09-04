@@ -38,7 +38,7 @@
 
 #define FRAMEADVANCE_DELAY_DEFAULT 10
 
-namespace FCEU {
+namespace fceu {
 
 enum GI {
 	GI_RESETM2	=1,
@@ -57,9 +57,9 @@ enum EFCEUI
 	FCEUI_RESET, FCEUI_POWER, FCEUI_PLAYFROMBEGINNING, FCEUI_EJECT_DISK, FCEUI_SWITCH_DISK, FCEUI_INSERT_COIN
 };
 
-class Emulator {
+class FCEU {
   public:
-    Emulator() : skip_7bit_overclocking(1), AFon(1), AFoff(1),
+    FCEU() : handler(), input(&handler), skip_7bit_overclocking(1), AFon(1), AFoff(1),
         movieSubtitles(true), frameAdvance_Delay(FRAMEADVANCE_DELAY_DEFAULT),
         AutosaveQty(4), AutosaveFrequency(256), AutoFirePatternLength(2) {
       AutoFirePattern[0] = 1;
@@ -106,8 +106,9 @@ class Emulator {
   private:
     // Members.
     Handler handler;
-    PPU* ppu;
-    X6502* x6502;
+    Input input;
+    PPU ppu;
+    X6502 x6502;
 
     FCEUS FSettings;
 
@@ -169,9 +170,9 @@ class Emulator {
     int AutosaveCounter;
 
     // Methods.
-    void AllocBuffers() { RAM = (uint8*)FCEU::gmalloc(0x800); };
+    void AllocBuffers() { RAM = (uint8*)fceu::gmalloc(0x800); };
     void FreeBuffers() {
-      FCEU::free(RAM);
+      fceu::free(RAM);
       RAM = NULL;
     };
 
@@ -212,6 +213,6 @@ class Emulator {
     bool IsValidUI(EFCEUI ui);
 };
 
-}
+} // namespace fceu
 
 #endif

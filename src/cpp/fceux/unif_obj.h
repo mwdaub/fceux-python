@@ -22,7 +22,7 @@
 
 #include "file_obj.h"
 
-namespace FCEU {
+namespace fceu {
 
 int UNIFLoad(const char *name, FCEUFILE *fp);
 
@@ -168,6 +168,6 @@ void BMC8IN1_Init(CartInfo *info);
 uint8 *UNIFchrrama;	// Meh.  So I can stop CHR RAM
 					// bank switcherooing with certain boards...
 
-} // namespace FCEU
+} // namespace fceu
 
 #endif // define _UNIF_H_

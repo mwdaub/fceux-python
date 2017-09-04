@@ -134,10 +134,6 @@ typedef uint32_t uint32;
 
 #endif
 
-namespace FCEU {
-class PPU;
-}
-
 typedef std::function<void(uint32,uint8)> writefunc;
 typedef std::function<uint8(uint32)> readfunc;
 

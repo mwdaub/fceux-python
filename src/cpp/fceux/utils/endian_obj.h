@@ -4,9 +4,9 @@
 #include <iosfwd>
 #include <stdio.h>
 #include "../types_obj.h"
-#include "../emufile.h"
+#include "../emufile_obj.h"
 
-class EMUFILE;
+namespace fceu {
 
 inline uint64 double_to_u64(double d) {
 	union {
@@ -105,6 +105,8 @@ int writele(T *Bufo, EMUFILE*os)
 		default:
 			return 0;
 	}
+}
+
 }
 
 #endif //__FCEU_ENDIAN

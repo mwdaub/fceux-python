@@ -21,7 +21,7 @@
 
 #include "ppu_obj.h"
 
-namespace FCEU {
+namespace fceu {
 
 void PPU::makeppulut(void) {
 	int x;
@@ -584,7 +584,7 @@ void PPU::B4014(uint32 A, uint8 V) {
 
 void PPU::ResetRL(uint8 *target) {
 	memset(target, 0xFF, 256);
-	InputScanlineHook(0, 0, 0, 0);
+	input->ScanlineHook(0, 0, 0, 0);
 	Plinef = target;
 	Pline = target;
 	firsttile = 0;
@@ -690,7 +690,7 @@ void PPU::RefreshLine(int lastpixel) {
 		}
 
 		if ((lastpixel - 16) >= 0) {
-			InputScanlineHook(Plinef, spork ? sprlinebuf : 0, linestartts, lasttile * 8 - 16);
+			input->ScanlineHook(Plinef, spork ? sprlinebuf : 0, linestartts, lasttile * 8 - 16);
 		}
 		return;
 	}
@@ -815,7 +815,7 @@ void PPU::RefreshLine(int lastpixel) {
 	CheckSpriteHit(lastpixel);
 
 	if ((lastpixel - 16) >= 0) {
-		InputScanlineHook(Plinef, spork ? sprlinebuf : 0, linestartts, lasttile * 8 - 16);
+		input->ScanlineHook(Plinef, spork ? sprlinebuf : 0, linestartts, lasttile * 8 - 16);
 	}
 	Pline = P;
 	firsttile = lasttile;
@@ -1914,4 +1914,4 @@ finish:
     return 0;
 }
 
-}
+} // namespace fceu

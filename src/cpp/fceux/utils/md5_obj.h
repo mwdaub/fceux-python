@@ -4,7 +4,7 @@
 #include "../types_obj.h"
 #include "valuearray_obj.h"
 
-namespace FCEU {
+namespace fceu {
 
 struct md5_context
 {
@@ -22,6 +22,6 @@ void md5_finish( struct md5_context *ctx, uint8 digest[16] );
 /* Uses a static buffer, so beware of how it's used. */
 char *md5_asciistr(MD5DATA& md5);
 
-} // namespace FCEU
+} // namespace fceu
 
 #endif // define _MD5_H

@@ -3,7 +3,7 @@
 
 #include "file_obj.h"
 
-namespace FCEU {
+namespace fceu {
 
 int FDSLoad(const char *name, FCEUFILE *fp);
 
@@ -14,6 +14,6 @@ void FCEU_FDSInsert(void);
 //void FCEU_FDSEject(void);
 void FCEU_FDSSelect(void);
 
-} // namespace FCEU
+} // namespace fceu
 
 #endif // define _FDS_H_

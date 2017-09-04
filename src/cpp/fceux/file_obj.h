@@ -43,7 +43,7 @@
 #define FCEUMKF_TASEDITOR    22
 #define FCEUMKF_RESUMESTATE  23
 
-namespace FCEU {
+namespace fceu {
 
 struct FCEUFILE {
 	//the stream you can use to access the data
@@ -176,6 +176,6 @@ std::string MakeFName(int type, int id1, const char *cd1);
 std::string GetMfn();
 void SplitArchiveFilename(std::string src, std::string& archive, std::string& file, std::string& fileToOpen);
 
-} // namespace FCEU
+} // namespace fceu
 
 #endif // define _FCEU_FILE_H_

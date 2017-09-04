@@ -1,7 +1,7 @@
 #ifndef _VIDEO_H_
 #define _VIDEO_H_
 
-namespace FCEU {
+namespace fceu {
 
 uint8* XBuf=NULL; //used for current display
 uint8* XBackBuf=NULL; //ppu output is stashed here before drawing happens
@@ -13,6 +13,6 @@ void ResetScreenshotsCounter(void);
 int FCEU_InitVirtualVideo(void);
 void FCEU_KillVirtualVideo(void);
 
-}
+} // namespace fceu
 
 #endif // define _VIDEO_H

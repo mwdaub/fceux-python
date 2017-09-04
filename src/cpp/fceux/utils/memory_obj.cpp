@@ -1,13 +1,13 @@
 #include "memory_obj.h"
 
-namespace FCEU {
+namespace fceu {
 
 ///allocates the specified number of bytes. returns null if this fails
 void* malloc(uint32 size) {
   void *ret;
   ret=malloc(size);
   if(!ret) {
-    FCEU::PrintError("Error allocating memory!");
+    fceu::PrintError("Error allocating memory!");
     return(0);
   }
   //mbg 6/17/08 - sometimes this memory is used as RAM or somesuch without clearing first.
@@ -23,7 +23,7 @@ void* gmalloc(uint32 size) {
   void *ret;
   ret=malloc(size);
   if(!ret) {
-    FCEU::PrintError("Error allocating memory!  Doing a hard exit.");
+    fceu::PrintError("Error allocating memory!  Doing a hard exit.");
     exit(1);
   }
   //mbg 6/17/08 - sometimes this memory is used as RAM or somesuch without clearing first.
@@ -53,4 +53,4 @@ void dfree(void *ptr) {
   free(ptr);
 }
 
-} // namespace FCEU
+} // namespace fceu

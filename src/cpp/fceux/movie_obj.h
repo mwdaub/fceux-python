@@ -15,7 +15,7 @@
 #include <ostream>
 #include <cstdlib>
 
-namespace FCEU {
+namespace fceu {
 
 enum EMOVIE_FLAG
 {
@@ -190,6 +190,6 @@ void DisplaySubtitles(char *format, ...);
 
 void poweron(bool shouldDisableBatteryLoading);
 
-} // namespace FCEU
+} // namespace fceu
 
 #endif // define _MOVIE_H_

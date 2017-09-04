@@ -31,7 +31,7 @@
 #define FCEU_IQFCOUNT   0x200
 #define FCEU_IQTEMP     0x800
 
-namespace FCEU {
+namespace fceu {
 
 class X6502 {
   public:
@@ -124,6 +124,6 @@ class X6502 {
     inline void WrRAM(unsigned int A, uint8 V) { (*RAM)[A]=V; };
 };
 
-} // namespace FCEU
+} // namespace fceu
 
 #endif // define _X6502H

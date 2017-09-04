@@ -3,6 +3,8 @@
 
 #include "types_obj.h"
 
+namespace fceu {
+
 typedef uint8 u8;
 typedef uint16 u16;
 typedef uint32 u32;
@@ -12,5 +14,6 @@ typedef int16 s16;
 typedef int32 s32;
 typedef int64 s64;
 
+} // namespace fceu
 
 #endif //EMUFILE_TYPES_H

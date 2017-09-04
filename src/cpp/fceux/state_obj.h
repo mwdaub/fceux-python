@@ -10,7 +10,7 @@
 //all FCEUSTATE flags together so that we can mask them out and get the size
 #define FCEUSTATE_FLAGS (FCEUSTATE_RLSB|FCEUSTATE_INDIRECT)
 
-namespace FCEU {
+namespace fceu {
 
 enum ENUM_SSLOADPARAMS
 {
@@ -62,6 +62,6 @@ void LoadBackup();					 //Loads the backupsavestate
 void RedoLoadState();				 //reloads a loadstate if backupsavestate was run
 void SwapSaveState();				 //Swaps a savestate with its backup state
 
-} // namespace FCEU
+} // namespace fceu
 
 #endif // define _STATEH

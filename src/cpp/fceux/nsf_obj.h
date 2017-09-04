@@ -23,7 +23,7 @@
 
 #include "file_obj.h"
 
-namespace FCEU {
+namespace fceu {
 
 typedef struct {
                 char ID[5]; /*NESM^Z*/
@@ -58,6 +58,6 @@ void DoNSFFrame(void);
 
 int NSFLoad(const char *name, FCEUFILE *fp);
 
-} // namespace FCEU
+} // namespace fceu
 
 #endif // define NSF_H

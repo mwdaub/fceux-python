@@ -23,7 +23,7 @@
 
 #include "types_obj.h"
 
-namespace FCEU {
+namespace fceu {
 
 typedef struct {
 	   void (*Fill)(int Count);	/* Low quality ext sound. */
@@ -74,6 +74,6 @@ int32 WaveFinal[2048+512];
 int32 WaveHi[40000];
 uint32 soundtsinc;
 
-} // namespace FCEU
+} // namespace fceu
 
 #endif // define _SOUND_H_

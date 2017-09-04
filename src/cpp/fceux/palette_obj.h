@@ -1,7 +1,7 @@
 #ifndef _PALETTE_H_
 #define _PALETTE_H_
 
-namespace FCEU {
+namespace fceu {
 
 typedef struct {
 	uint8 r,g,b;
@@ -21,6 +21,6 @@ void FCEU_DrawNTSCControlBars(uint8 *XBuf);
 
 void SetNESDeemph_OldHacky(uint8 d, int force);
 
-}
+} // namespace fceu
 
 #endif

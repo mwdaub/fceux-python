@@ -1,7 +1,7 @@
 #ifndef _CART_H
 #define _CART_H
 
-namespace FCEU {
+namespace fceu {
 
 typedef struct {
 	// Set by mapper/board code:
@@ -42,6 +42,6 @@ bool OpenGenie(void);
 void CloseGenie(void);
 void KillGenie(void);
 
-} // namespace FCEU
+} // namespace fceu
 
 #endif // define _CART_H

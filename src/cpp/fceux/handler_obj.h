@@ -3,7 +3,7 @@
 
 #include "types_obj.h"
 
-namespace FCEU {
+namespace fceu {
 
 class Handler {
   public:
@@ -53,9 +53,9 @@ class Handler {
     }
 
     int AllocGenieRW(void) {
-      if (!(AReadG = (readfunc**)FCEU::malloc(0x8000 * sizeof(readfunc*))))
+      if (!(AReadG = (readfunc**)fceu::malloc(0x8000 * sizeof(readfunc*))))
         return 0;
-      if (!(BWriteG = (writefunc**)FCEU::malloc(0x8000 * sizeof(writefunc*))))
+      if (!(BWriteG = (writefunc**)fceu::malloc(0x8000 * sizeof(writefunc*))))
         return 0;
       RWWrap_ = 1;
       return 1;
@@ -67,8 +67,8 @@ class Handler {
           ARead[x + 0x8000] = AReadG[x];
           BWrite[x + 0x8000] = BWriteG[x];
         }
-        FCEU::free(AReadG);
-        FCEU::free(BWriteG);
+        fceu::free(AReadG);
+        fceu::free(BWriteG);
         AReadG = NULL;
         BWriteG = NULL;
         RWWrap_ = 0;
@@ -85,6 +85,6 @@ class Handler {
     int RWWrap_;
 };
 
-} // namespace FCEU
+} // namespace fceu
 
 #endif // define _HANDLER_H_

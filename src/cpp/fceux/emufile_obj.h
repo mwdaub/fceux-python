@@ -39,6 +39,8 @@ THE SOFTWARE.
 #include <algorithm>
 #include <string>
 
+namespace fceu {
+
 class EMUFILE {
 protected:
 	bool failbit;
@@ -342,5 +344,7 @@ public:
 	}
 
 };
+
+} // namespace fceu
 
 #endif

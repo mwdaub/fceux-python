@@ -31,7 +31,7 @@
 #define H_FLIP  0x40
 #define SP_BACK 0x20
 
-namespace FCEU {
+namespace fceu {
 
 template<typename T, int BITS>
 struct BITREVLUT {
@@ -229,10 +229,10 @@ struct PPUREGS {
 
 	void debug_log()
 	{
-        FCEU::printf("ppur: fv(%d), v(%d), h(%d), vt(%d), ht(%d)\n",fv,v,h,vt,ht);
-        FCEU::printf("      _fv(%d), _v(%d), _h(%d), _vt(%d), _ht(%d)\n",_fv,_v,_h,_vt,_ht);
-        FCEU::printf("      fh(%d), s(%d), par(%d)\n",fh,s,par);
-        FCEU::printf("      .status cycle(%d), end_cycle(%d), sl(%d)\n",status.cycle,status.end_cycle,status.sl);
+        fceu::printf("ppur: fv(%d), v(%d), h(%d), vt(%d), ht(%d)\n",fv,v,h,vt,ht);
+        fceu::printf("      _fv(%d), _v(%d), _h(%d), _vt(%d), _ht(%d)\n",_fv,_v,_h,_vt,_ht);
+        fceu::printf("      fh(%d), s(%d), par(%d)\n",fh,s,par);
+        fceu::printf("      .status cycle(%d), end_cycle(%d), sl(%d)\n",status.cycle,status.end_cycle,status.sl);
 	}
 };
 
@@ -321,6 +321,8 @@ class PPU {
       memcpy(FCEU_NEWPPU_STATEINFO, newstateinfo, 32*sizeof(SFORMAT));
     }
 
+    PPU() : bgdata(this) {}
+
     // Members.
     bool* DMC_7bit;
     bool* paldeemphswap;
@@ -406,6 +408,7 @@ class PPU {
     static BITREVLUT<uint8, 8> bitrevlut;
 
     Handler* handler;
+    Input* input;
 
     X6502* x6502;
     uint8** RAM;
@@ -690,6 +693,6 @@ class PPU {
     }
 };
 
-}
+} // namespace fceu
 
 #endif // define _PPUH

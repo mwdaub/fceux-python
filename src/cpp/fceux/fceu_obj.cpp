@@ -2,35 +2,35 @@
 
 using namespace std;
 
-namespace FCEU {
+namespace fceu {
 
-void Emulator::TogglePPU(void) {
+void FCEU::TogglePPU(void) {
 	newppu ^= 1;
 	if (newppu) {
-        FCEU::DispMessage("New PPU loaded", 0);
-        FCEU::printf("New PPU loaded");
+        fceu::DispMessage("New PPU loaded", 0);
+        fceu::printf("New PPU loaded");
 		overclock_enabled = 0;
 	} else {
-        FCEU::DispMessage("Old PPU loaded", 0);
-        FCEU::printf("Old PPU loaded");
+        fceu::DispMessage("Old PPU loaded", 0);
+        fceu::printf("Old PPU loaded");
 	}
 	normalscanlines = (dendy ? 290 : 240)+newppu; // use flag as number!
 }
 
-void Emulator::CloseGame(void) {
+void FCEU::CloseGame(void) {
 	if (GameInfo) {
 		if (AutoResumePlay) {
 			// save "-resume" savestate
-			FCEUSS_Save(FCEU::MakeFName(FCEUMKF_RESUMESTATE, 0, 0).c_str(), false);
+			FCEUSS_Save(fceu::MakeFName(FCEUMKF_RESUMESTATE, 0, 0).c_str(), false);
 		}
 
 		if (GameInfo->name) {
-            FCEU::free(GameInfo->name);
+            fceu::free(GameInfo->name);
 			GameInfo->name = NULL;
 		}
 
 		if (GameInfo->type != GIT_NSF) {
-            FCEU::FlushGameCheats(0, 0);
+            fceu::FlushGameCheats(0, 0);
 		}
 
 		GameInterface(GI_CLOSE);
@@ -61,21 +61,21 @@ void Emulator::CloseGame(void) {
 	}
 }
 
-void Emulator::ResetGameLoaded(void) {
+void FCEU::ResetGameLoaded(void) {
 	if (GameInfo) CloseGame();
 	EmulationPaused_ = 0; //mbg 5/8/08 - loading games while paused was bad news. maybe this fixes it
 	GameStateRestore = 0;
-	ppu->ResetGameLoaded();
+	ppu.ResetGameLoaded();
 	if (GameExpSound.Kill)
 		GameExpSound.Kill();
 	memset(&GameExpSound, 0, sizeof(GameExpSound));
-	x6502->ResetGameLoaded();
+	x6502.ResetGameLoaded();
 	PAL &= 1;
 	default_palette_selection = 0;
 }
 
 //name should be UTF-8, hopefully, or else there may be trouble
-FCEUGI* Emulator::LoadGameVirtual(const char *name, int OverwriteVidMode, bool silent) {
+FCEUGI* FCEU::LoadGameVirtual(const char *name, int OverwriteVidMode, bool silent) {
 	//----------
 	//attempt to open the files
 	FCEUFILE *fp;
@@ -84,12 +84,12 @@ FCEUGI* Emulator::LoadGameVirtual(const char *name, int OverwriteVidMode, bool s
 	int lastdendy = dendy;
 
 	const char* romextensions[] = { "nes", "fds", 0 };
-	fp = FCEU::fopen(name, 0, "rb", 0, -1, romextensions);
+	fp = fceu::fopen(name, 0, "rb", 0, -1, romextensions);
 
 	if (!fp)
 	{
 		if (!silent)
-			FCEU::PrintError("Error opening \"%s\"!", name);
+			fceu::PrintError("Error opening \"%s\"!", name);
 		return 0;
 	} else if (fp->archiveFilename != "")
 	{
@@ -102,14 +102,14 @@ FCEUGI* Emulator::LoadGameVirtual(const char *name, int OverwriteVidMode, bool s
 	}
 
 	//file opened ok. start loading.
-    FCEU::printf("Loading %s...\n\n", fullname);
+    fceu::printf("Loading %s...\n\n", fullname);
 	GetFileBase(fp->filename.c_str());
 	ResetGameLoaded();
 	//reset parameters so they're cleared just in case a format's loader doesn't know to do the clearing
 	MasterRomInfoParams = TMasterRomInfoParams();
 
 	if (!AutosaveStatus)
-		AutosaveStatus = (int*)FCEU::dmalloc(sizeof(int) * AutosaveQty);
+		AutosaveStatus = (int*)fceu::dmalloc(sizeof(int) * AutosaveQty);
 	for (AutosaveIndex = 0; AutosaveIndex < AutosaveQty; ++AutosaveIndex)
 		AutosaveStatus[AutosaveIndex] = 0;
 
@@ -142,8 +142,8 @@ FCEUGI* Emulator::LoadGameVirtual(const char *name, int OverwriteVidMode, bool s
 		goto endlseq;
 
 	if (!silent)
-		FCEU::PrintError("An error occurred while loading the file.");
-    FCEU::fclose(fp);
+		fceu::PrintError("An error occurred while loading the file.");
+    fceu::fclose(fp);
 
 	delete GameInfo;
 	GameInfo = 0;
@@ -152,7 +152,7 @@ FCEUGI* Emulator::LoadGameVirtual(const char *name, int OverwriteVidMode, bool s
 
  endlseq:
 
-    FCEU::fclose(fp);
+    fceu::fclose(fp);
 
 	if (OverwriteVidMode)
 		ResetVidSys();
@@ -176,25 +176,25 @@ FCEUGI* Emulator::LoadGameVirtual(const char *name, int OverwriteVidMode, bool s
 	FCEU_ResetMessages();   // Save state, status messages, etc.
 
 	if (!lastpal && PAL) {
-        FCEU::DispMessage("PAL mode set", 0);
-        FCEU::printf("PAL mode set");
+        fceu::DispMessage("PAL mode set", 0);
+        fceu::printf("PAL mode set");
 	} else if (!lastdendy && dendy) {
 		// this won't happen, since we don't autodetect dendy, but maybe someday we will?
-        FCEU::DispMessage("Dendy mode set", 0);
-        FCEU::printf("Dendy mode set");
+        fceu::DispMessage("Dendy mode set", 0);
+        fceu::printf("Dendy mode set");
 	} else if ((lastpal || lastdendy) && !(PAL || dendy)) {
-        FCEU::DispMessage("NTSC mode set", 0);
-        FCEU::printf("NTSC mode set");
+        fceu::DispMessage("NTSC mode set", 0);
+        fceu::printf("NTSC mode set");
 	}
 
 	if (GameInfo->type != GIT_NSF)
-		FCEU::LoadGameCheats(0);
+		fceu::LoadGameCheats(0);
 
 	if (AutoResumePlay)
 	{
 		// load "-resume" savestate
-		if (FCEUSS_Load(FCEU::MakeFName(FCEUMKF_RESUMESTATE, 0, 0).c_str(), false))
-			FCEU::DispMessage("Old play session resumed.", 0);
+		if (FCEUSS_Load(fceu::MakeFName(FCEUMKF_RESUMESTATE, 0, 0).c_str(), false))
+			fceu::DispMessage("Old play session resumed.", 0);
 	}
 
 	ResetScreenshotsCounter();
@@ -202,12 +202,12 @@ FCEUGI* Emulator::LoadGameVirtual(const char *name, int OverwriteVidMode, bool s
 	return GameInfo;
 }
 
-FCEUGI* Emulator::LoadGame(const char *name, int OverwriteVidMode, bool silent) {
+FCEUGI* FCEU::LoadGame(const char *name, int OverwriteVidMode, bool silent) {
 	return LoadGameVirtual(name, OverwriteVidMode, silent);
 }
 
 //Return: Flag that indicates whether the function was succesful or not.
-bool Emulator::Initialize() {
+bool FCEU::Initialize() {
 	srand(time(0));
 
 	if (!FCEU_InitVirtualVideo()) {
@@ -233,20 +233,20 @@ bool Emulator::Initialize() {
 	FSettings.NoiseVolume = 256;      //0-256 scale (256 is max volume)
 	FSettings.PCMVolume = 256;        //0-256 scale (256 is max volume)
 
-	ppu->Init();
+	ppu.Init();
 
-	x6502->Init();
+	x6502.Init();
 
 	return true;
 }
 
-void Emulator::Kill(void) {
+void FCEU::Kill(void) {
 	FCEU_KillVirtualVideo();
 	KillGenie();
 	FreeBuffers();
 }
 
-void Emulator::SetAutoFirePattern(int onframes, int offframes) {
+void FCEU::SetAutoFirePattern(int onframes, int offframes) {
 	int i;
 	for (i = 0; i < onframes && i < 8; i++) {
 		AutoFirePattern[i] = 1;
@@ -264,12 +264,12 @@ void Emulator::SetAutoFirePattern(int onframes, int offframes) {
 	AFon = onframes; AFoff = offframes;
 }
 
-void Emulator::SetAutoFireOffset(int offset) {
+void FCEU::SetAutoFireOffset(int offset) {
 	if (offset < 0 || offset > 8) return;
 	AutoFireOffset = offset;
 }
 
-void Emulator::AutoFire(void) {
+void FCEU::AutoFire(void) {
 	if (justLagged == false)
 		counter = (counter + 1) % (8 * 7 * 5 * 3);
 	//If recording a movie, use the frame # for the autofire so the offset
@@ -283,7 +283,7 @@ void Emulator::AutoFire(void) {
 
 ///Emulates a single frame.
 ///Skip may be passed in, if FRAMESKIP is #defined, to cause this to emulate more than one frame
-void Emulator::Emulate(uint8 **pXBuf, int32 **SoundBuf, int32 *SoundBufSize, int skip) {
+void FCEU::Emulate(uint8 **pXBuf, int32 **SoundBuf, int32 *SoundBufSize, int skip) {
 	//skip initiates frame skip if 1, or frame skip and sound skip if 2
 	int r, ssize;
 
@@ -319,17 +319,17 @@ void Emulator::Emulate(uint8 **pXBuf, int32 **SoundBuf, int32 *SoundBufSize, int
 	AutoFire();
 	UpdateAutosave();
 
-	FCEU_UpdateInput();
+	input.Update();
 	lagFlag = 1;
 
-	if (geniestage != 1) FCEU::ApplyPeriodicCheats();
-	r = ppu->Loop(skip);
+	if (geniestage != 1) fceu::ApplyPeriodicCheats();
+	r = ppu.Loop(skip);
 
 	if (skip != 2) ssize = FlushEmulateSound();  //If skip = 2 we are skipping sound processing
 
-	timestampbase += x6502->timestamp();
-	x6502->setTimestamp(0);
-	x6502->setSoundtimestamp(0);
+	timestampbase += x6502.timestamp();
+	x6502.setTimestamp(0);
+	x6502.setSoundtimestamp(0);
 
 	*pXBuf = skip ? 0 : XBuf;
 	if (skip == 2) { //If skip = 2, then bypass sound
@@ -357,21 +357,21 @@ void Emulator::Emulate(uint8 **pXBuf, int32 **SoundBuf, int32 *SoundBufSize, int
 		ProcessSubtitles();
 }
 
-void Emulator::ResetNES(void) {
+void FCEU::ResetNES(void) {
 	FCEUMOV_AddCommand(FCEUNPCMD_RESET);
 	if (!GameInfo) return;
 	GameInterface(GI_RESETM2);
 	FCEUSND_Reset();
-	ppu->Reset();
-	x6502->Reset();
+	ppu.Reset();
+	x6502.Reset();
 
 	// clear back baffer
 	memset(XBackBuf, 0, 256 * 256);
 
-    FCEU::DispMessage("Reset", 0);
+    fceu::DispMessage("Reset", 0);
 }
 
-void Emulator::MemoryRand(uint8 *ptr, uint32 size) {
+void FCEU::MemoryRand(uint8 *ptr, uint32 size) {
 	int x = 0;
 	while (size) {
 		uint8 v = 0;
@@ -401,19 +401,19 @@ void Emulator::MemoryRand(uint8 *ptr, uint32 size) {
 	}
 }
 
-void Emulator::PowerNES(void) {
+void FCEU::PowerNES(void) {
 	FCEUMOV_AddCommand(FCEUNPCMD_POWER);
 	if (!GameInfo) return;
 
-    FCEU::CheatResetRAM();
-    FCEU::CheatAddRAM(2, 0, RAM);
+    fceu::CheatResetRAM();
+    fceu::CheatAddRAM(2, 0, RAM);
 
 	GeniePower();
 
 	MemoryRand(RAM, 0x800);
 
-	ppu->Power();
-	InitializeInput();
+	ppu.Power();
+	input.Initialize();
 	FCEUSND_Power();
 
 	//Have the external game hardware "powered" after the internal NES stuff.  Needed for the NSF code and VS System code.
@@ -427,17 +427,17 @@ void Emulator::PowerNES(void) {
 		GameInterface(GI_RESETSAVE);
 
 	timestampbase = 0;
-	x6502->Power();
-    FCEU::PowerCheats();
+	x6502.Power();
+    fceu::PowerCheats();
 	LagCounterReset();
 	// clear back buffer
 	memset(XBackBuf, 0, 256 * 256);
 
 
-    FCEU::DispMessage("Power on", 0);
+    fceu::DispMessage("Power on", 0);
 }
 
-void Emulator::ResetVidSys(void) {
+void FCEU::ResetVidSys(void) {
 	int w;
 
 	if (GameInfo->vidsys == GIV_NTSC)
@@ -458,11 +458,11 @@ void Emulator::ResetVidSys(void) {
 
 	normalscanlines = (dendy ? 290 : 240)+newppu; // use flag as number!
 	totalscanlines = normalscanlines + (overclock_enabled ? postrenderscanlines : 0);
-	ppu->SetVideoSystem(w || dendy);
+	ppu.SetVideoSystem(w || dendy);
 	SetSoundVariables();
 }
 
-void Emulator::SetRenderedLines(int ntscf, int ntscl, int palf, int pall) {
+void FCEU::SetRenderedLines(int ntscf, int ntscl, int palf, int pall) {
 	FSettings.UsrFirstSLine[0] = ntscf;
 	FSettings.UsrLastSLine[0] = ntscl;
 	FSettings.UsrFirstSLine[1] = palf;
@@ -476,7 +476,7 @@ void Emulator::SetRenderedLines(int ntscf, int ntscl, int palf, int pall) {
 	}
 }
 
-void Emulator::SetVidSystem(int a) {
+void FCEU::SetVidSystem(int a) {
 	FSettings.PAL = a ? 1 : 0;
 	if (GameInfo) {
 		ResetVidSys();
@@ -484,7 +484,7 @@ void Emulator::SetVidSystem(int a) {
 	}
 }
 
-int Emulator::GetCurrentVidSystem(int *slstart, int *slend) {
+int FCEU::GetCurrentVidSystem(int *slstart, int *slend) {
 	if (slstart)
 		*slstart = FSettings.FirstSLine;
 	if (slend)
@@ -492,7 +492,7 @@ int Emulator::GetCurrentVidSystem(int *slstart, int *slend) {
 	return(PAL);
 }
 
-void Emulator::SetRegion(int region, int notify) {
+void FCEU::SetRegion(int region, int notify) {
 	switch (region) {
 		case 0: // NTSC
 			normalscanlines = 240;
@@ -515,14 +515,14 @@ void Emulator::SetRegion(int region, int notify) {
 	SetVidSystem(pal_emulation);
 }
 
-int32 Emulator::GetDesiredFPS(void) {
+int32 FCEU::GetDesiredFPS(void) {
 	if (PAL || dendy)
 		return(838977920);  // ~50.007
 	else
 		return(1008307711);  // ~60.1
 }
 
-void Emulator::UpdateAutosave(void) {
+void FCEU::UpdateAutosave(void) {
 	if (!EnableAutosave || turbo)
 		return;
 
@@ -530,24 +530,24 @@ void Emulator::UpdateAutosave(void) {
 	if (++AutosaveCounter >= AutosaveFrequency) {
 		AutosaveCounter = 0;
 		AutosaveIndex = (AutosaveIndex + 1) % AutosaveQty;
-		f = strdup(FCEU::MakeFName(FCEUMKF_AUTOSTATE, AutosaveIndex, 0).c_str());
+		f = strdup(fceu::MakeFName(FCEUMKF_AUTOSTATE, AutosaveIndex, 0).c_str());
 		FCEUSS_Save(f, false);
 		AutoSS = true;  //Flag that an auto-savestate was made
-        FCEU::free(f);
+        fceu::free(f);
         f = NULL;
 		AutosaveStatus[AutosaveIndex] = 1;
 	}
 }
 
-void Emulator::RewindToLastAutosave(void) {
+void FCEU::RewindToLastAutosave(void) {
 	if (!EnableAutosave || !AutoSS)
 		return;
 
 	if (AutosaveStatus[AutosaveIndex] == 1) {
 		char * f;
-		f = strdup(FCEU::MakeFName(FCEUMKF_AUTOSTATE, AutosaveIndex, 0).c_str());
+		f = strdup(fceu::MakeFName(FCEUMKF_AUTOSTATE, AutosaveIndex, 0).c_str());
 		FCEUSS_Load(f);
-        FCEU::free(f);
+        fceu::free(f);
         f = NULL;
 
 		//Set pointer to previous available slot
@@ -560,7 +560,7 @@ void Emulator::RewindToLastAutosave(void) {
 	}
 }
 
-bool Emulator::IsValidUI(EFCEUI ui) {
+bool FCEU::IsValidUI(EFCEUI ui) {
 	switch (ui) {
 	case FCEUI_OPENGAME:
 	case FCEUI_CLOSEGAME:
@@ -605,4 +605,4 @@ bool Emulator::IsValidUI(EFCEUI ui) {
 	return true;
 }
 
-}
+} // namespace fceu
