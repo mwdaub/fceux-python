@@ -15,11 +15,6 @@
 
 namespace fceu {
 
-unsigned int lagCounter;
-char lagFlag;
-
-void LagCounterReset();
-
 typedef std::function<uint8(int)> inputread;
 typedef std::function<void(uint8)> inputwrite;
 typedef std::function<void(int)> inputstrobe;
@@ -67,11 +62,16 @@ struct JOYPORT {
 	void load(MovieRecord* mr) { driver->Load(w,mr); }
 };
 
+class FCEU;
+
 class Input {
   public:
     Input(Handler* handler) : handler_(handler) {
       joyports[1].w = 1;
     }
+
+    JOYPORT* GetJoyport(int i) { return joyports+i; };
+    void UpdateJoy(uint32 val) { memcpy(&val,joy,4); };
 
     //called from PPU on scanline events.
     void ScanlineHook(uint8 *bg, uint8 *spr, uint32 linets, int final);
@@ -87,7 +87,9 @@ class Input {
     Handler* handler_;
     X6502* x6502_;
 
-    FCEUGI** GameInfo;
+    Movie* movie;
+
+    FCEU* fceu;
 
     int fceuindbg;
 

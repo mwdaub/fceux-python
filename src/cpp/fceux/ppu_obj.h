@@ -260,6 +260,7 @@ typedef uint8 (FASTCALL *ppureadfunc)(PPU* ppu, uint32 A);
 typedef void (*ppuwritefunc)(PPU* ppu, uint32 A, uint8 V);
 
 class PPU {
+  friend class Cart;
   public:
     // Constructor.
     PPU(uint8 PAL, LOGGER logger) : PAL(PAL), gNoBGFillColor(0xFF), new_ppu_reset(false), idleSynch(1),
@@ -341,6 +342,9 @@ class PPU {
     int Loop(int skip);
     int NewLoop(int skip);
 
+    void TogglePPU(void) { newppu ^= 1; };
+    int is_newppu(void) { return newppu; };
+
     void ResetGameLoaded(void) {
 	  PPU_hook = NULL;
 	  GameHBIRQHook = NULL;
@@ -388,8 +392,8 @@ class PPU {
     inline uint8 READPAL(int ofs) { return PALRAM[ofs] & (GRAYSCALE() ? 0x30 : 0xFF); };
     inline uint8 READUPAL(int ofs) { return UPALRAM[ofs] & (GRAYSCALE() ? 0x30 : 0xFF); };
 
-    inline uint8* MMC5SPRVRAMADR(int V) { return &MMC5SPRVPage[V >> 10][V]; };
-    inline uint8* VRAMADR(int V) { return &VPage[V >> 10][V]; };
+    inline uint8* MMC5SPRVRAMADR(int V) { return &(cart->MMC5SPRVPage[V >> 10][V]); };
+    inline uint8* VRAMADR(int V) { return &(cart->VPage[V >> 10][V]); };
 
     inline uint8 Read(uint32 A) { return (*FFCEUX_PPURead)(A); };
     inline void Write(uint32 A, uint8 V) { FFCEUX_PPUWrite ? (*FFCEUX_PPUWrite)(A, V) : Write_Default(A, V); };
@@ -409,6 +413,7 @@ class PPU {
 
     Handler* handler;
     Input* input;
+    Cart* cart;
 
     X6502* x6502;
     uint8** RAM;

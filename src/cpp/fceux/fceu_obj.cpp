@@ -5,7 +5,8 @@ using namespace std;
 namespace fceu {
 
 void FCEU::TogglePPU(void) {
-	newppu ^= 1;
+    ppu.TogglePPU();
+    int newppu = ppu.is_newppu();
 	if (newppu) {
         fceu::DispMessage("New PPU loaded", 0);
         fceu::printf("New PPU loaded");
@@ -35,7 +36,7 @@ void FCEU::CloseGame(void) {
 
 		GameInterface(GI_CLOSE);
 
-		StopMovie();
+		movie.Stop();
 
 		ResetExState(0, 0);
 
@@ -43,12 +44,12 @@ void FCEU::CloseGame(void) {
 		if (XBuf)
 			memset(XBuf, 0, 256 * 256);
 
-		CloseGenie();
+		cart.CloseGenie();
 
 		delete GameInfo;
 		GameInfo = NULL;
 
-		currFrameCounter = 0;
+		movie.SetFrame(0);
 
 		//Reset flags for Undo/Redo/Auto Savestating //adelikat: TODO: maybe this stuff would be cleaner as a struct or class
 		lastSavestateMade[0] = 0;
@@ -161,7 +162,7 @@ FCEUGI* FCEU::LoadGameVirtual(const char *name, int OverwriteVidMode, bool silen
 	{
 		if (FSettings.GameGenie)
 		{
-			if (OpenGenie())
+			if (cart.OpenGenie())
 			{
 				SetGameGenie(false);
 			}
@@ -242,7 +243,7 @@ bool FCEU::Initialize() {
 
 void FCEU::Kill(void) {
 	FCEU_KillVirtualVideo();
-	KillGenie();
+	cart.KillGenie();
 	FreeBuffers();
 }
 
@@ -274,8 +275,8 @@ void FCEU::AutoFire(void) {
 		counter = (counter + 1) % (8 * 7 * 5 * 3);
 	//If recording a movie, use the frame # for the autofire so the offset
 	//doesn't get screwed up when loading.
-	if (FCEUMOV_Mode(MOVIEMODE_RECORD | MOVIEMODE_PLAY)) {
-		rapidAlternator = AutoFirePattern[(AutoFireOffset + FCEUMOV_GetFrame()) % AutoFirePatternLength]; //adelikat: TODO: Think through this, MOVIEMODE_FINISHED should not use movie data for auto-fire?
+	if (movie.Mode(MOVIEMODE_RECORD | MOVIEMODE_PLAY)) {
+		rapidAlternator = AutoFirePattern[(AutoFireOffset + movie.GetFrame()) % AutoFirePatternLength]; //adelikat: TODO: Think through this, MOVIEMODE_FINISHED should not use movie data for auto-fire?
 	} else {
 		rapidAlternator = AutoFirePattern[(AutoFireOffset + counter) % AutoFirePatternLength];
 	}
@@ -320,9 +321,9 @@ void FCEU::Emulate(uint8 **pXBuf, int32 **SoundBuf, int32 *SoundBufSize, int ski
 	UpdateAutosave();
 
 	input.Update();
-	lagFlag = 1;
+	movie.SetLagFlag(1);
 
-	if (geniestage != 1) fceu::ApplyPeriodicCheats();
+	if (cart.GenieStage() != 1) fceu::ApplyPeriodicCheats();
 	r = ppu.Loop(skip);
 
 	if (skip != 2) ssize = FlushEmulateSound();  //If skip = 2 we are skipping sound processing
@@ -340,7 +341,7 @@ void FCEU::Emulate(uint8 **pXBuf, int32 **SoundBuf, int32 *SoundBufSize, int ski
 		*SoundBufSize = ssize;
 	}
 
-	if ((EmulationPaused_ & EMULATIONPAUSED_FA) && (!frameAdvanceLagSkip || !lagFlag))
+	if ((EmulationPaused_ & EMULATIONPAUSED_FA) && (!movie.GetFrameAdvanceLagSkip() || !movie.GetLagged()))
 	//Lots of conditions here.  EmulationPaused_ & EMULATIONPAUSED_FA must be true.  In addition frameAdvanceLagSkip or lagFlag must be false
 	// When Frame Advance is held, emulator is automatically paused after emulating one frame (or several lag frames)
 	{
@@ -348,17 +349,17 @@ void FCEU::Emulate(uint8 **pXBuf, int32 **SoundBuf, int32 *SoundBufSize, int ski
 		JustFrameAdvanced = true;
 	}
 
-	if (lagFlag) {
-		lagCounter++;
+	if (movie.GetLagged()) {
+		movie.IncreaseLagCount();
 		justLagged = true;
 	} else justLagged = false;
 
 	if (movieSubtitles)
-		ProcessSubtitles();
+		movie.ProcessSubtitles();
 }
 
 void FCEU::ResetNES(void) {
-	FCEUMOV_AddCommand(FCEUNPCMD_RESET);
+	movie.AddCommand(FCEUNPCMD_RESET);
 	if (!GameInfo) return;
 	GameInterface(GI_RESETM2);
 	FCEUSND_Reset();
@@ -402,13 +403,13 @@ void FCEU::MemoryRand(uint8 *ptr, uint32 size) {
 }
 
 void FCEU::PowerNES(void) {
-	FCEUMOV_AddCommand(FCEUNPCMD_POWER);
+	movie.AddCommand(FCEUNPCMD_POWER);
 	if (!GameInfo) return;
 
     fceu::CheatResetRAM();
     fceu::CheatAddRAM(2, 0, RAM);
 
-	GeniePower();
+	cart.GeniePower();
 
 	MemoryRand(RAM, 0x800);
 
@@ -422,14 +423,13 @@ void FCEU::PowerNES(void) {
 		FCEU_VSUniPower();
 
 	//if we are in a movie, then reset the saveram
-	extern int disableBatteryLoading;
-	if (disableBatteryLoading)
+	if (cart.GetDisableBatteryLoading())
 		GameInterface(GI_RESETSAVE);
 
 	timestampbase = 0;
 	x6502.Power();
     fceu::PowerCheats();
-	LagCounterReset();
+	movie.LagCounterReset();
 	// clear back buffer
 	memset(XBackBuf, 0, 256 * 256);
 
@@ -453,6 +453,7 @@ void FCEU::ResetVidSys(void) {
 	if (PAL)
 		dendy = 0;
 
+    int newppu = ppu.is_newppu();
 	if (newppu)
 		overclock_enabled = 0;
 
@@ -510,7 +511,7 @@ void FCEU::SetRegion(int region, int notify) {
 			dendy = 1;
 			break;
 	}
-	normalscanlines += newppu;
+	normalscanlines += ppu.is_newppu();
 	totalscanlines = normalscanlines + (overclock_enabled ? postrenderscanlines : 0);
 	SetVidSystem(pal_emulation);
 }
@@ -564,7 +565,7 @@ bool FCEU::IsValidUI(EFCEUI ui) {
 	switch (ui) {
 	case FCEUI_OPENGAME:
 	case FCEUI_CLOSEGAME:
-		if (FCEUMOV_Mode(MOVIEMODE_TASEDITOR)) return false;
+		if (movie.Mode(MOVIEMODE_TASEDITOR)) return false;
 		break;
 	case FCEUI_RECORDMOVIE:
 	case FCEUI_PLAYMOVIE:
@@ -576,14 +577,14 @@ bool FCEU::IsValidUI(EFCEUI ui) {
 	case FCEUI_PREVIOUSSAVESTATE:
 	case FCEUI_VIEWSLOTS:
 		if (!GameInfo) return false;
-		if (FCEUMOV_Mode(MOVIEMODE_TASEDITOR)) return false;
+		if (movie.Mode(MOVIEMODE_TASEDITOR)) return false;
 		break;
 
 	case FCEUI_STOPMOVIE:
-		return(FCEUMOV_Mode(MOVIEMODE_PLAY | MOVIEMODE_RECORD | MOVIEMODE_FINISHED));
+		return(movie.Mode(MOVIEMODE_PLAY | MOVIEMODE_RECORD | MOVIEMODE_FINISHED));
 
 	case FCEUI_PLAYFROMBEGINNING:
-		return(FCEUMOV_Mode(MOVIEMODE_PLAY | MOVIEMODE_RECORD | MOVIEMODE_TASEDITOR | MOVIEMODE_FINISHED));
+		return(movie.Mode(MOVIEMODE_PLAY | MOVIEMODE_RECORD | MOVIEMODE_TASEDITOR | MOVIEMODE_FINISHED));
 
 	case FCEUI_STOPAVI:
 		return false;
@@ -598,8 +599,8 @@ bool FCEU::IsValidUI(EFCEUI ui) {
 	case FCEUI_SWITCH_DISK:
 	case FCEUI_INSERT_COIN:
 		if (!GameInfo) return false;
-		if (FCEUMOV_Mode(MOVIEMODE_RECORD)) return true;
-		if (!FCEUMOV_Mode(MOVIEMODE_INACTIVE)) return false;
+		if (movie.Mode(MOVIEMODE_RECORD)) return true;
+		if (!movie.Mode(MOVIEMODE_INACTIVE)) return false;
 		break;
 	}
 	return true;

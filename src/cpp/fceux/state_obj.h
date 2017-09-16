@@ -30,6 +30,9 @@ struct SFORMAT
 	char *desc;
 };
 
+//tells the save system innards that we're loading the old format
+bool FCEU_state_loading_old_format;
+
  //zlib values: 0 (none) through 9 (max) or -1 (default)
 bool FCEUSS_SaveMS(EMUFILE* outstream, int compressionLevel);
 

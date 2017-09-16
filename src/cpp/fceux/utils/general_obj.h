@@ -52,6 +52,7 @@ void printf(char *format, ...) {
 void DispMessage(char *format, int disppos, ...);
 void DispMessageOnMovie(char *format, ...);
 FILE* UTF8fopen(const char *fn, const char *mode) { return(::fopen(fn,mode)); };
+inline FILE* UTF8fopen(const std::string &n, const char *mode) { return UTF8fopen(n.c_str(),mode); }
 
 ///a wrapper for unzip.c
 extern "C" FILE* UTF8fopen_C(const char *n, const char *m) {

@@ -155,6 +155,11 @@ struct ArchiveScanRecord
 	bool isArchive() { return type != -1; }
 };
 
+bool bindSavestate = true;	//Toggle that determines if a savestate filename will include the movie filename
+std::string BaseDirectory;
+char FileExt[2048];	//Includes the . character, as in ".nes"
+char FileBase[2048];
+char FileBaseDirectory[2048];
 
 FCEUFILE* fopen(const char *path, const char *ipsfn, char *mode, char *ext, int index=-1, const char** extensions = 0);
 bool isFileInArchive(const char *path);

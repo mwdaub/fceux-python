@@ -1,23 +1,25 @@
 #include "input_obj.h"
 
+#include "fceu_obj.h"
+
 namespace fceu {
 
 void Input::Update(void) {
 	//tell all drivers to poll input and set up their logical states
-	if(!FCEUMOV_Mode(MOVIEMODE_PLAY))
+	if(!movie->Mode(MOVIEMODE_PLAY))
 	{
 		for(int port=0;port<2;port++){
 			joyports[port].driver->Update(port,joyports[port].ptr,joyports[port].attrib);
 		}
 	}
 
-	if((*GameInfo)->type==GIT_VSUNI)
+	if(fceu->GetGameInfo()->type==GIT_VSUNI)
 		if(coinon) coinon--;
 
-	FCEUMOV_AddInputState();
+	movie->AddInputState();
 
 	//TODO - should this apply to the movie data? should this be displayed in the input hud?
-	if((*GameInfo)->type==GIT_VSUNI){
+	if(fceu->GetGameInfo()->type==GIT_VSUNI){
 		FCEU_VSUniSwap(&joy[0],&joy[1]);
 	}
 }
@@ -28,7 +30,7 @@ void Input::Initialize(void) {
 	memset(joy,0,sizeof(joy));
 	LastStrobe = 0;
 
-	if((*GameInfo)->type==GIT_VSUNI) {
+	if(fceu->GetGameInfo()->type==GIT_VSUNI) {
 		handler_->SetReadHandler(0x4016,0x4016,&VSUNIRead0_);
 		handler_->SetReadHandler(0x4017,0x4017,&VSUNIRead1_);
 	} else {
@@ -46,7 +48,7 @@ void Input::Initialize(void) {
 void Input::SetDriver(int port) {
 	switch(joyports[port].type) {
 	case SI_GAMEPAD:
-		if((*GameInfo)->type==GIT_VSUNI){
+		if(fceu->GetGameInfo()->type==GIT_VSUNI){
 			joyports[port].driver = &GPCVS;
 		} else {
 			joyports[port].driver= &GPC;
@@ -59,7 +61,7 @@ void Input::SetDriver(int port) {
 }
 
 uint8 Input::VSUNIRead0(uint32 A) {
-	lagFlag = 0;
+	movie->SetLagFlag(0);
 	uint8 ret=0;
 
 	ret|=(joyports[0].driver->Read(0))&1;
@@ -71,7 +73,7 @@ uint8 Input::VSUNIRead0(uint32 A) {
 }
 
 uint8 Input::VSUNIRead1(uint32 A) {
-	lagFlag = 0;
+	movie->SetLagFlag(0);
 	uint8 ret=0;
 
 	ret|=(joyports[1].driver->Read(1))&1;
@@ -80,9 +82,8 @@ uint8 Input::VSUNIRead1(uint32 A) {
 }
 
 uint8 Input::JPRead(uint32 A) {
-	lagFlag = 0;
+	movie->SetLagFlag(0);
 	uint8 ret=0;
-	static bool microphone = false;
 
 	ret|=joyports[A&1].driver->Read(A&1);
 

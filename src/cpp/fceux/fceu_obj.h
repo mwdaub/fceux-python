@@ -17,6 +17,7 @@
 #include "utils/general_obj.h"
 #include "utils/memory_obj.h"
 
+#include "cart_obj.h"
 #include "cheat_obj.h"
 #include "fds_obj.h"
 #include "file_obj.h"
@@ -58,6 +59,7 @@ enum EFCEUI
 };
 
 class FCEU {
+  friend class PPU;
   public:
     FCEU() : handler(), input(&handler), skip_7bit_overclocking(1), AFon(1), AFoff(1),
         movieSubtitles(true), frameAdvance_Delay(FRAMEADVANCE_DELAY_DEFAULT),
@@ -65,6 +67,16 @@ class FCEU {
       AutoFirePattern[0] = 1;
     };
 
+    // Members.
+    Handler handler;
+    Input input;
+    PPU ppu;
+    X6502 x6502;
+    Cart cart;
+
+    Movie movie;
+
+    // Methods.
     bool Initialize(void);
     void ResetGameLoaded(void);
 
@@ -103,16 +115,28 @@ class FCEU {
     void PutImageDummy(void);
     #endif
 
+    void SetAutoSS(bool flag) { AutoSS = flag; };
+    FCEUGI* GetGameInfo(void) { return GameInfo; };
+
+    int GetCurrentVidSystem(int *slstart, int *slend);
+    void SetRenderedLines(int ntscf, int ntscl, int palf, int pall);
+    void SetVidSystem(int a);
+
+    bool IsValidUI(EFCEUI ui);
+
+    //mbg merge 7/18/06 added
+    //ideally maybe we shouldnt be using this, but i need it for quick merging
+    int EmulationPaused(void) { return (EmulationPaused_ & EMULATIONPAUSED_PAUSED); };
+    void SetEmulationPaused(int val) { EmulationPaused_ = val; };
+    void ToggleEmulationPause(void) {
+	  EmulationPaused_ = (EmulationPaused_ & EMULATIONPAUSED_PAUSED) ^ EMULATIONPAUSED_PAUSED;
+	  DebuggerWasUpdated = false;
+    }
+
   private:
     // Members.
-    Handler handler;
-    Input input;
-    PPU ppu;
-    X6502 x6502;
-
     FCEUS FSettings;
 
-    int newppu;
     bool turbo;
 
     FCEUGI* GameInfo = NULL;
@@ -181,26 +205,13 @@ class FCEU {
 
     void Kill(void);
 
-    void SetRenderedLines(int ntscf, int ntscl, int palf, int pall);
-    void SetVidSystem(int a);
-    int GetCurrentVidSystem(int *slstart, int *slend);
-
     void SetRegion(int region, int notify);
     //Enable or disable Game Genie option.
     void SetGameGenie(bool a) { FSettings.GameGenie = a; };
     int32 GetDesiredFPS(void);
 
-    int EmulationPaused(void) { return (EmulationPaused_ & EMULATIONPAUSED_PAUSED); };
     int EmulationFrameStepped() { return (EmulationPaused_ & EMULATIONPAUSED_FA); };
     void ClearEmulationFrameStepped() { EmulationPaused_ &= ~EMULATIONPAUSED_FA; };
-
-    //mbg merge 7/18/06 added
-    //ideally maybe we shouldnt be using this, but i need it for quick merging
-    void SetEmulationPaused(int val) { EmulationPaused_ = val; };
-    void ToggleEmulationPause(void) {
-	  EmulationPaused_ = (EmulationPaused_ & EMULATIONPAUSED_PAUSED) ^ EMULATIONPAUSED_PAUSED;
-	  DebuggerWasUpdated = false;
-    }
 
     void FrameAdvanceEnd(void) { frameAdvanceRequested = false; };
     void FrameAdvance(void) {
@@ -209,8 +220,6 @@ class FCEU {
     }
 
     void UpdateAutosave(void);
-
-    bool IsValidUI(EFCEUI ui);
 };
 
 } // namespace fceu

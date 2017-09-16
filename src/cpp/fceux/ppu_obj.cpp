@@ -85,7 +85,7 @@ void PPU::Write_Default(uint32 A, uint8 V) {
 
 	if (tmp < 0x2000) {
 		if (PPUCHRRAM & (1 << (tmp >> 10)))
-			VPage[tmp >> 10][tmp] = V;
+			cart->VPage[tmp >> 10][tmp] = V;
 	} else if (tmp < 0x3F00) {
 		if (PPUNTARAM & (1 << ((tmp & 0xF00) >> 10)))
 			vnapage[((tmp & 0xF00) >> 10)][tmp & 0x3FF] = V;
@@ -102,7 +102,7 @@ void PPU::Write_Default(uint32 A, uint8 V) {
 
 int PPU::GetCHRAddress(int A) {
 	if (cdloggerVideoDataSize) {
-		int result = &VPage[A >> 10][A] - CHRptr[0];
+		int result = &(cart->VPage)[A >> 10][A] - (cart->CHRptr)[0];
 		if ((result >= 0) && (result < (int)cdloggerVideoDataSize))
 			return result;
 	} else
@@ -116,7 +116,7 @@ uint8 FASTCALL PPU::Read_Default(uint32 A) {
 	if (PPU_hook) PPU_hook(A);
 
 	if (tmp < 0x2000) {
-		return VPage[tmp >> 10][tmp];
+		return cart->VPage[tmp >> 10][tmp];
 	} else if (tmp < 0x3F00) {
 		return vnapage[(tmp >> 10) & 0x3][tmp & 0x3FF];
 	} else {
@@ -363,7 +363,7 @@ uint8 PPU::A2007(uint32 A) {
 			#endif
 			{
 				if ((tmp - 0x1000) < 0x2000)
-					VRAMBuffer = VPage[(tmp - 0x1000) >> 10][tmp - 0x1000];
+					VRAMBuffer = cart->VPage[(tmp - 0x1000) >> 10][tmp - 0x1000];
 				else
 					VRAMBuffer = vnapage[((tmp - 0x1000) >> 10) & 0x3][(tmp - 0x1000) & 0x3FF];
 				if (PPU_hook) PPU_hook(tmp);
@@ -385,7 +385,7 @@ uint8 PPU::A2007(uint32 A) {
 						//probably wrong CD logging in this case...
 						VRAMBuffer = *MMC5BGVRAMADR(tmp);
 					}
-					else VRAMBuffer = VPage[tmp >> 10][tmp];
+					else VRAMBuffer = cart->VPage[tmp >> 10][tmp];
 
 				} else if (tmp < 0x3F00)
 					VRAMBuffer = vnapage[(tmp >> 10) & 0x3][tmp & 0x3FF];
@@ -551,7 +551,7 @@ void PPU::B2007(uint32 A, uint8 V) {
 		PPUGenLatch = V;
 		if (tmp < 0x2000) {
 			if (PPUCHRRAM & (1 << (tmp >> 10)))
-				VPage[tmp >> 10][tmp] = V;
+				cart->VPage[tmp >> 10][tmp] = V;
 		} else if (tmp < 0x3F00) {
 			if (PPUNTARAM & (1 << ((tmp & 0xF00) >> 10)))
 				vnapage[((tmp & 0xF00) >> 10)][tmp & 0x3FF] = V;
@@ -705,7 +705,7 @@ void PPU::RefreshLine(int lastpixel) {
 	//It's probably not totally correct for carts in "SL" mode.
 
 #define PPUT_MMC5
-	if (MMC5Hack && geniestage != 1) {
+	if (MMC5Hack && cart->geniestage != 1) {
 		if (MMC5HackCHRMode == 0 && (MMC5HackSPMode & 0x80)) {
 			int tochange = MMC5HackSPMode & 0x1F;
 			tochange -= firsttile;
@@ -984,7 +984,7 @@ void PPU::FetchSpriteData(void) {
 					}
 
 					/* Fix this geniestage hack */
-					if (MMC5Hack && geniestage != 1)
+					if (MMC5Hack && cart->geniestage != 1)
 						C = MMC5SPRVRAMADR(vadr);
 					else
 						C = VRAMADR(vadr);

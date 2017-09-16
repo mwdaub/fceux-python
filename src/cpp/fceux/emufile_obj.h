@@ -25,6 +25,8 @@ THE SOFTWARE.
 #ifndef EMUFILE_H
 #define EMUFILE_H
 
+#include <iostream>
+
 #include "emufile_types_obj.h"
 
 #ifdef _MSC_VER
@@ -342,6 +344,30 @@ public:
 	virtual void fflush() {
 		::fflush(fp);
 	}
+
+    /**
+    * Opens a file to be read a byte at a time.
+    */
+    static EMUFILE_FILE* FCEUD_UTF8_fstream(const char *fn, const char *m)
+    {
+	    std::ios_base::openmode mode = std::ios_base::binary;
+	    if(!strcmp(m,"r") || !strcmp(m,"rb"))
+		    mode |= std::ios_base::in;
+	    else if(!strcmp(m,"w") || !strcmp(m,"wb"))
+		    mode |= std::ios_base::out | std::ios_base::trunc;
+	    else if(!strcmp(m,"a") || !strcmp(m,"ab"))
+		    mode |= std::ios_base::out | std::ios_base::app;
+	    else if(!strcmp(m,"r+") || !strcmp(m,"r+b"))
+		    mode |= std::ios_base::in | std::ios_base::out;
+	    else if(!strcmp(m,"w+") || !strcmp(m,"w+b"))
+		    mode |= std::ios_base::in | std::ios_base::out | std::ios_base::trunc;
+	    else if(!strcmp(m,"a+") || !strcmp(m,"a+b"))
+		    mode |= std::ios_base::in | std::ios_base::out | std::ios_base::app;
+        return new EMUFILE_FILE(fn, m);
+	    //return new std::fstream(fn,mode);
+    }
+
+    inline static EMUFILE_FILE* FCEUD_UTF8_fstream(const std::string &n, const char *m) { return FCEUD_UTF8_fstream(n.c_str(),m); }
 
 };
 
