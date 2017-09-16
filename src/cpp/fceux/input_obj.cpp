@@ -139,7 +139,7 @@ uint8 Input::ReadGP(int w) {
 	{
 		if(joy_readbit[w]==19-w) ret|=1;
 	}
-	if(fceuindbg)
+	if(fceu->ppu.get_fceuindbg())
 		joy_readbit[w]++;
 	return ret;
 }
@@ -152,7 +152,7 @@ uint8 Input::ReadGPVS(int w) {
 	else
 	{
 		ret = ((joy[w]>>(joy_readbit[w]))&1);
-		if(!fceuindbg)
+		if(!fceu->ppu.get_fceuindbg())
 			joy_readbit[w]++;
 	}
 	return ret;

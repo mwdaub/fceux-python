@@ -6,6 +6,7 @@
 namespace fceu {
 
 class Handler {
+  friend class Cheat;
   public:
     void SetReadNull(readfunc* ReadNull) { ReadNull_ = ReadNull; };
     void SetWriteNull(writefunc* WriteNull) { WriteNull_ = WriteNull; };

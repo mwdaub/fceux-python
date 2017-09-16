@@ -73,6 +73,7 @@ class FCEU {
     PPU ppu;
     X6502 x6502;
     Cart cart;
+    Cheat cheat;
 
     Movie movie;
 

@@ -91,8 +91,6 @@ class Input {
 
     FCEU* fceu;
 
-    int fceuindbg;
-
     JOYPORT joyports[2];
 
     INPUTC GPC={&ReadGP_,0,&StrobeGP_,&UpdateGP_,0,0,&LogGP_,&LoadGP_};

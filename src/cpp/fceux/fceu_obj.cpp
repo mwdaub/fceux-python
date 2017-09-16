@@ -31,7 +31,7 @@ void FCEU::CloseGame(void) {
 		}
 
 		if (GameInfo->type != GIT_NSF) {
-            fceu::FlushGameCheats(0, 0);
+            cheat.FlushGameCheats(0, 0);
 		}
 
 		GameInterface(GI_CLOSE);
@@ -189,7 +189,7 @@ FCEUGI* FCEU::LoadGameVirtual(const char *name, int OverwriteVidMode, bool silen
 	}
 
 	if (GameInfo->type != GIT_NSF)
-		fceu::LoadGameCheats(0);
+		cheat.LoadGameCheats(0);
 
 	if (AutoResumePlay)
 	{
@@ -323,7 +323,7 @@ void FCEU::Emulate(uint8 **pXBuf, int32 **SoundBuf, int32 *SoundBufSize, int ski
 	input.Update();
 	movie.SetLagFlag(1);
 
-	if (cart.GenieStage() != 1) fceu::ApplyPeriodicCheats();
+	if (cart.GenieStage() != 1) cheat.ApplyPeriodicCheats();
 	r = ppu.Loop(skip);
 
 	if (skip != 2) ssize = FlushEmulateSound();  //If skip = 2 we are skipping sound processing
@@ -406,8 +406,8 @@ void FCEU::PowerNES(void) {
 	movie.AddCommand(FCEUNPCMD_POWER);
 	if (!GameInfo) return;
 
-    fceu::CheatResetRAM();
-    fceu::CheatAddRAM(2, 0, RAM);
+    cheat.CheatResetRAM();
+    cheat.CheatAddRAM(2, 0, RAM);
 
 	cart.GeniePower();
 
@@ -428,7 +428,7 @@ void FCEU::PowerNES(void) {
 
 	timestampbase = 0;
 	x6502.Power();
-    fceu::PowerCheats();
+    cheat.PowerCheats();
 	movie.LagCounterReset();
 	// clear back buffer
 	memset(XBackBuf, 0, 256 * 256);

@@ -344,6 +344,8 @@ class PPU {
 
     void TogglePPU(void) { newppu ^= 1; };
     int is_newppu(void) { return newppu; };
+    int get_fceuindbg(void) { return fceuindbg; };
+    void set_fceuindbg(int val) { fceuindbg = val; };
 
     void ResetGameLoaded(void) {
 	  PPU_hook = NULL;
