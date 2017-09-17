@@ -147,4 +147,20 @@ typedef std::function<uint8(uint32)> readfunc;
 #define FCEUNPCMD_FDSINSERT	0x18
 #define FCEUNPCMD_FDSSELECT	0x1A
 
+//.rom
+#define FCEUIOD_ROMS    0	//Roms
+#define FCEUIOD_NV      1	//NV = nonvolatile. save data.
+#define FCEUIOD_STATES  2	//savestates
+#define FCEUIOD_FDSROM  3	//disksys.rom
+#define FCEUIOD_SNAPS   4	//screenshots
+#define FCEUIOD_CHEATS  5	//cheats
+#define FCEUIOD_MOVIES  6	//.fm2 files
+#define FCEUIOD_MEMW    7	//memory watch fiels
+#define FCEUIOD_BBOT    8	//basicbot, obsolete
+#define FCEUIOD_MACRO   9	//macro files - old TASEdit v0.1 paradigm, not implemented, probably obsolete
+#define FCEUIOD_INPUT   10	//input presets
+#define FCEUIOD_LUA     11	//lua scripts
+#define FCEUIOD_AVI		12	//default file for avi output
+#define FCEUIOD__COUNT  13	//base directory override?
+
 #endif // define __FCEU_TYPES

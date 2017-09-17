@@ -61,6 +61,7 @@ class FCEU {
     Cheat cheat;
     Drawing drawing;
     FDS fds;
+    File file;
 
     FCEUGI* GameInfo = NULL;
     FCEUS FSettings;

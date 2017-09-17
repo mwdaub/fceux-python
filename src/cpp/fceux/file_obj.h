@@ -155,12 +155,6 @@ struct ArchiveScanRecord
 	bool isArchive() { return type != -1; }
 };
 
-bool bindSavestate = true;	//Toggle that determines if a savestate filename will include the movie filename
-std::string BaseDirectory;
-char FileExt[2048];	//Includes the . character, as in ".nes"
-char FileBase[2048];
-char FileBaseDirectory[2048];
-
 FCEUFILE* fopen(const char *path, const char *ipsfn, char *mode, char *ext, int index=-1, const char** extensions = 0);
 bool isFileInArchive(const char *path);
 int fclose(FCEUFILE*);
@@ -174,12 +168,30 @@ int fgetc(FCEUFILE*);
 uint64 fgetsize(FCEUFILE*);
 int fisarchive(FCEUFILE*);
 
-void GetFileBase(const char *f);
-std::string GetPath(int type);
-std::string MakePath(int type, const char* filebase);
-std::string MakeFName(int type, int id1, const char *cd1);
+FCEUFILE* OpenArchiveIndex(ArchiveScanRecord& asr, std::string &fname, int innerIndex) { return 0; }
+FCEUFILE* OpenArchive(ArchiveScanRecord& asr, std::string& fname, std::string* innerFilename) { return 0; }
+ArchiveScanRecord ScanArchive(std::string fname) { return ArchiveScanRecord(); }
+
 std::string GetMfn();
 void SplitArchiveFilename(std::string src, std::string& archive, std::string& file, std::string& fileToOpen);
+
+void ApplyIPS(FILE *ips, FCEUFILE* fp);
+
+class File {
+  public:
+    bool bindSavestate = true;	//Toggle that determines if a savestate filename will include the movie filename
+    std::string BaseDirectory;
+    char FileExt[2048];	//Includes the . character, as in ".nes"
+    char FileBase[2048];
+    char FileBaseDirectory[2048];
+
+    FileBaseInfo CurrentFileBase();
+    void GetFileBase(const char *f);
+    void SetBaseDirectory(std::string const & dir);
+    std::string GetPath(int type);
+    std::string MakePath(int type, const char* filebase);
+    std::string MakeFName(int type, int id1, const char *cd1);
+};
 
 } // namespace fceu
 

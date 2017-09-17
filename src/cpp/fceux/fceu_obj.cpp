@@ -22,7 +22,7 @@ void FCEU::CloseGame(void) {
 	if (GameInfo) {
 		if (AutoResumePlay) {
 			// save "-resume" savestate
-			FCEUSS_Save(fceu::MakeFName(FCEUMKF_RESUMESTATE, 0, 0).c_str(), false);
+			FCEUSS_Save(file.MakeFName(FCEUMKF_RESUMESTATE, 0, 0).c_str(), false);
 		}
 
 		if (GameInfo->name) {
@@ -104,7 +104,7 @@ FCEUGI* FCEU::LoadGameVirtual(const char *name, int OverwriteVidMode, bool silen
 
 	//file opened ok. start loading.
     fceu::printf("Loading %s...\n\n", fullname);
-	GetFileBase(fp->filename.c_str());
+	file.GetFileBase(fp->filename.c_str());
 	ResetGameLoaded();
 	//reset parameters so they're cleared just in case a format's loader doesn't know to do the clearing
 	MasterRomInfoParams = TMasterRomInfoParams();
@@ -194,7 +194,7 @@ FCEUGI* FCEU::LoadGameVirtual(const char *name, int OverwriteVidMode, bool silen
 	if (AutoResumePlay)
 	{
 		// load "-resume" savestate
-		if (FCEUSS_Load(fceu::MakeFName(FCEUMKF_RESUMESTATE, 0, 0).c_str(), false))
+		if (FCEUSS_Load(file.MakeFName(FCEUMKF_RESUMESTATE, 0, 0).c_str(), false))
 			fceu::DispMessage("Old play session resumed.", 0);
 	}
 
@@ -531,7 +531,7 @@ void FCEU::UpdateAutosave(void) {
 	if (++AutosaveCounter >= AutosaveFrequency) {
 		AutosaveCounter = 0;
 		AutosaveIndex = (AutosaveIndex + 1) % AutosaveQty;
-		f = strdup(fceu::MakeFName(FCEUMKF_AUTOSTATE, AutosaveIndex, 0).c_str());
+		f = strdup(file.MakeFName(FCEUMKF_AUTOSTATE, AutosaveIndex, 0).c_str());
 		FCEUSS_Save(f, false);
 		AutoSS = true;  //Flag that an auto-savestate was made
         fceu::free(f);
@@ -546,7 +546,7 @@ void FCEU::RewindToLastAutosave(void) {
 
 	if (AutosaveStatus[AutosaveIndex] == 1) {
 		char * f;
-		f = strdup(fceu::MakeFName(FCEUMKF_AUTOSTATE, AutosaveIndex, 0).c_str());
+		f = strdup(file.MakeFName(FCEUMKF_AUTOSTATE, AutosaveIndex, 0).c_str());
 		FCEUSS_Load(f);
         fceu::free(f);
         f = NULL;

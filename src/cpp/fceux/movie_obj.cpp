@@ -662,7 +662,7 @@ void Movie::Stop()
 
 	curMovieFilename[0] = 0;			//No longer a current movie filename
 	freshMovie = false;					//No longer a fresh movie loaded
-	if (bindSavestate) fceu->SetAutoSS(false);	//If bind movies to savestates is true, then there is no longer a valid auto-save to load
+	if (fceu->file.bindSavestate) fceu->SetAutoSS(false);	//If bind movies to savestates is true, then there is no longer a valid auto-save to load
 
 }
 
@@ -698,7 +698,7 @@ void Movie::CreateCleanMovie()
 {
 	currMovieData = MovieData();
 	currMovieData.palFlag = fceu->GetCurrentVidSystem(0,0)!=0;
-	currMovieData.romFilename = FileBase;
+	currMovieData.romFilename = fceu->file.FileBase;
 	currMovieData.romChecksum = fceu->GameInfo->MD5;
 	currMovieData.guid.newGuid();
 	currMovieData.fourscore = fceu->input.GetFourscore();
@@ -748,7 +748,7 @@ bool Movie::Load(const char *fname, bool _read_only, int _pauseframe)
 	delete fp;
 
 	freshMovie = true;	//Movie has been loaded, so it must be unaltered
-	if (bindSavestate) fceu->SetAutoSS(false);	//If bind savestate to movie is true, then their isn't a valid auto-save to load, so flag it
+	if (fceu->file.bindSavestate) fceu->SetAutoSS(false);	//If bind savestate to movie is true, then their isn't a valid auto-save to load, so flag it
 	//fully reload the game to reinitialize everything before playing any movie
 	poweron(true);
 
@@ -795,7 +795,7 @@ bool Movie::Load(const char *fname, bool _read_only, int _pauseframe)
 
 void Movie::openRecordingMovie(const char* fname)
 {
-	osRecordingMovie = EMUFILE_FILE::FCEUD_UTF8_fstream(fname, "wb");
+	osRecordingMovie = EMUFILE_FILE::UTF8_fstream(fname, "wb");
 	if(!osRecordingMovie)
 		fceu::PrintError("Error opening movie output file: %s",fname);
 	strcpy(curMovieFilename, fname);
@@ -1407,7 +1407,7 @@ void Movie::DisplaySubtitles(char *format, ...)
 void Movie::CreateFile(std::string fn)
 {
 	MovieData md = currMovieData;							//Get current movie data
-	EMUFILE* outf = EMUFILE_FILE::FCEUD_UTF8_fstream(fn, "wb");		//open/create file
+	EMUFILE* outf = EMUFILE_FILE::UTF8_fstream(fn, "wb");		//open/create file
 	md.dump(outf,false);									//dump movie data
 	delete outf;											//clean up, delete file object
 }

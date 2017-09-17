@@ -326,7 +326,7 @@ public:
     /**
     * Opens a file to be read a byte at a time.
     */
-    static EMUFILE_FILE* FCEUD_UTF8_fstream(const char *fn, const char *m)
+    static EMUFILE_FILE* UTF8_fstream(const char *fn, const char *m)
     {
 	    std::ios_base::openmode mode = std::ios_base::binary;
 	    if(!strcmp(m,"r") || !strcmp(m,"rb"))
@@ -345,7 +345,7 @@ public:
 	    //return new std::fstream(fn,mode);
     }
 
-    inline static EMUFILE_FILE* FCEUD_UTF8_fstream(const std::string &n, const char *m) { return FCEUD_UTF8_fstream(n.c_str(),m); }
+    inline static EMUFILE_FILE* UTF8_fstream(const std::string &n, const char *m) { return UTF8_fstream(n.c_str(),m); }
 
 };
 

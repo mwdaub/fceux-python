@@ -282,7 +282,7 @@ bool Cart::OpenGenie(void)
 		if (!(GENIEROM = (uint8*)fceu::malloc(4096 + 1024)))
 			return true;
 
-		fn = strdup(MakeFName(FCEUMKF_GGROM, 0, 0).c_str());
+		fn = strdup(fceu->file.MakeFName(FCEUMKF_GGROM, 0, 0).c_str());
 		fp = fceu::UTF8fopen(fn, "rb");
 		if (!fp)
 		{
@@ -458,7 +458,7 @@ void Cart::SaveGameSave(CartInfo *LocalHWInfo) {
 	if (LocalHWInfo->battery && LocalHWInfo->SaveGame[0]) {
 		FILE *sp;
 
-		std::string soot = MakeFName(FCEUMKF_SAV, 0, "sav");
+		std::string soot = fceu->file.MakeFName(FCEUMKF_SAV, 0, "sav");
 		if ((sp = fceu::UTF8fopen(soot, "wb")) == NULL) {
 			fceu::PrintError("WRAM file \"%s\" cannot be written to.\n", soot.c_str());
 		} else {
@@ -475,7 +475,7 @@ void Cart::LoadGameSave(CartInfo *LocalHWInfo) {
 	if (LocalHWInfo->battery && LocalHWInfo->SaveGame[0] && !disableBatteryLoading) {
 		FILE *sp;
 
-		std::string soot = MakeFName(FCEUMKF_SAV, 0, "sav");
+		std::string soot = fceu->file.MakeFName(FCEUMKF_SAV, 0, "sav");
 		sp = fceu::UTF8fopen(soot, "rb");
 		if (sp != NULL) {
 			for (int x = 0; x < 4; x++)

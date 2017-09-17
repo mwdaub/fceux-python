@@ -536,10 +536,10 @@ int FDS::FDSLoad(const char *name, FCEUFILE *fp) {
 	FILE *zp;
 	int x;
 
-	char *fn = strdup(fceu::MakeFName(FCEUMKF_FDSROM, 0, 0).c_str());
+	char *fn = strdup(fceu->file.MakeFName(FCEUMKF_FDSROM, 0, 0).c_str());
 
 	if (!(zp = fceu::UTF8fopen(fn, "rb"))) {
-            fceu::PrintError("FDS BIOS ROM image missing: %s", fceu::MakeFName(FCEUMKF_FDSROM, 0, 0).c_str());
+            fceu::PrintError("FDS BIOS ROM image missing: %s", fceu->file.MakeFName(FCEUMKF_FDSROM, 0, 0).c_str());
 		free(fn);
 		return 0;
 	}
@@ -549,7 +549,7 @@ int FDS::FDSLoad(const char *name, FCEUFILE *fp) {
 	fseek(zp, 0L, SEEK_END);
 	if (ftell(zp) != 8192) {
 		fclose(zp);
-        fceu::PrintError("FDS BIOS ROM image incompatible: %s", fceu::MakeFName(FCEUMKF_FDSROM, 0, 0).c_str());
+        fceu::PrintError("FDS BIOS ROM image incompatible: %s", fceu->file.MakeFName(FCEUMKF_FDSROM, 0, 0).c_str());
 		return 0;
 	}
 	fseek(zp, 0L, SEEK_SET);
@@ -593,7 +593,7 @@ int FDS::FDSLoad(const char *name, FCEUFILE *fp) {
 
 	if (!fceu->cart.GetDisableBatteryLoading()) {
 		FCEUFILE *tp;
-		char *fn = strdup(fceu::MakeFName(FCEUMKF_FDS, 0, 0).c_str());
+		char *fn = strdup(fceu->file.MakeFName(FCEUMKF_FDS, 0, 0).c_str());
 
 		int x;
 		for (x = 0; x < TotalSides; x++) {
@@ -676,7 +676,7 @@ void FDS::FDSClose(void) {
 
 	if (!DiskWritten) return;
 
-	const std::string &fn = fceu::MakeFName(FCEUMKF_FDS, 0, 0);
+	const std::string &fn = fceu->file.MakeFName(FCEUMKF_FDS, 0, 0);
 	if (!(fp = fceu::UTF8fopen(fn.c_str(), "wb"))) {
 		return;
 	}

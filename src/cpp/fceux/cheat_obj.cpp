@@ -141,7 +141,7 @@ void Cheat::LoadGameCheats(FILE *override)
 		fp = override;
 	else
 	{
-		fn=strdup(fceu::MakeFName(FCEUMKF_CHEAT,0,0).c_str());
+		fn=strdup(fceu->file.MakeFName(FCEUMKF_CHEAT,0,0).c_str());
 		fp=fceu::UTF8fopen(fn,"rb");
 		free(fn);
 		if(!fp) return;
@@ -241,7 +241,7 @@ void Cheat::FlushGameCheats(FILE *override, int nosave)
 		char *fn = 0;
 
 		if(!override)
-			fn = strdup(fceu::MakeFName(FCEUMKF_CHEAT,0,0).c_str());
+			fn = strdup(fceu->file.MakeFName(FCEUMKF_CHEAT,0,0).c_str());
 
 		if(cheats)
 		{
