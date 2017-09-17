@@ -952,7 +952,7 @@ void Movie::DrawMovies(uint8 *XBuf)
 			sprintf(counterbuf,"%d (no movie)",currFrameCounter);
 
 		if(counterbuf[0])
-			DrawTextTrans(ClipSidesOffset+XBuf+fceu->TextScanlineOffsetFromBottom(30)+1, 256, (uint8*)counterbuf, color+0x80);
+			fceu->drawing.DrawTextTrans(ClipSidesOffset+XBuf+fceu->TextScanlineOffsetFromBottom(30)+1, 256, (uint8*)counterbuf, color+0x80);
 	}
 	if(rerecord_display && movieMode != MOVIEMODE_INACTIVE)
 	{
@@ -960,7 +960,7 @@ void Movie::DrawMovies(uint8 *XBuf)
 		sprintf(counterbuf,"%d",currMovieData.rerecordCount);
 
 		if(counterbuf[0])
-			DrawTextTrans(ClipSidesOffset+XBuf+fceu->TextScanlineOffsetFromBottom(50)+1, 256, (uint8*)counterbuf, 0x28+0x80);
+			fceu->drawing.DrawTextTrans(ClipSidesOffset+XBuf+fceu->TextScanlineOffsetFromBottom(50)+1, 256, (uint8*)counterbuf, 0x28+0x80);
 	}
 }
 
@@ -972,7 +972,7 @@ void Movie::DrawLagCounter(uint8 *XBuf)
 		uint8 color = (lagFlag) ? (0x16+0x80) : (0x2A+0x80);
 		sprintf(lagcounterbuf, "%d", lagCounter);
 		if(lagcounterbuf[0])
-			DrawTextTrans(ClipSidesOffset + XBuf + fceu->TextScanlineOffsetFromBottom(40) + 1, 256, (uint8*)lagcounterbuf, color);
+			fceu->drawing.DrawTextTrans(ClipSidesOffset + XBuf + fceu->TextScanlineOffsetFromBottom(40) + 1, 256, (uint8*)lagcounterbuf, color);
 	}
 }
 

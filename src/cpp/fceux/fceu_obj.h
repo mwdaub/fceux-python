@@ -73,9 +73,11 @@ class FCEU {
     PPU ppu;
     X6502 x6502;
     Cart cart;
-    Cheat cheat;
-
     Movie movie;
+    Cheat cheat;
+    Drawing drawing;
+
+    FCEUS FSettings;
 
     // Methods.
     bool Initialize(void);
@@ -136,7 +138,6 @@ class FCEU {
 
   private:
     // Members.
-    FCEUS FSettings;
 
     bool turbo;
 
