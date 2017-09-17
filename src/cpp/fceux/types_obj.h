@@ -147,6 +147,4 @@ typedef std::function<uint8(uint32)> readfunc;
 #define FCEUNPCMD_FDSINSERT	0x18
 #define FCEUNPCMD_FDSSELECT	0x1A
 
-#include "utils/endian_obj.h"
-
 #endif // define __FCEU_TYPES

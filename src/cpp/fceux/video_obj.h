@@ -3,6 +3,8 @@
 
 #include "types_obj.h"
 
+#include "utils/endian_obj.h"
+
 namespace fceu {
 
 struct GUIMESSAGE

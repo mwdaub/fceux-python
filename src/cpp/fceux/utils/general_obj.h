@@ -25,7 +25,10 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include "../types.h"
+
+#include "../types_obj.h"
+
+#include "endian_obj.h"
 
 namespace fceu {
 
