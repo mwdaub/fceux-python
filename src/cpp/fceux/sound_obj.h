@@ -26,7 +26,7 @@
 namespace fceu {
 
 typedef struct {
-	   void (*Fill)(int Count);	/* Low quality ext sound. */
+       std::function<void(int)> *Fill;	/* Low quality ext sound. */
 
 	   /* NeoFill is for sound devices that are emulated in a more
 	      high-level manner(VRC7) in HQ mode.  Interestingly,
@@ -34,12 +34,12 @@ typedef struct {
 	      often) in lq mode than in high-quality mode.  Maybe that
      	      should be fixed. :)
 	   */
-           void (*NeoFill)(int32 *Wave, int Count);
-	   void (*HiFill)(void);
-	   void (*HiSync)(int32 ts);
+       std::function<void(int32*,int)> *NeoFill;
+       std::function<void(void)> *HiFill;
+       std::function<void(int32)> *HiSync;
 
-	   void (*RChange)(void);
-	   void (*Kill)(void);
+       std::function<void(void)> *RChange;
+       std::function<void(void)> *Kill;
 } EXPSOUND;
 
 EXPSOUND GameExpSound;
@@ -56,6 +56,8 @@ void FCEU_SoundCPUHook(int cycles);
 void Write_IRQFM (uint32 A, uint8 V); //mbg merge 7/17/06 brought over from latest mmbuild
 
 void LogDPCM(int romaddress, int dpcmsize);
+
+uint32 SoundTimestamp(void);
 
 typedef struct {
 	uint8 Speed;

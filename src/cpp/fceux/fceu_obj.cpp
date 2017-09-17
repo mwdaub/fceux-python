@@ -34,7 +34,7 @@ void FCEU::CloseGame(void) {
             cheat.FlushGameCheats(0, 0);
 		}
 
-		GameInterface(GI_CLOSE);
+		(*GameInterface)(GI_CLOSE);
 
 		movie.Stop();
 
@@ -68,7 +68,7 @@ void FCEU::ResetGameLoaded(void) {
 	GameStateRestore = 0;
 	ppu.ResetGameLoaded();
 	if (GameExpSound.Kill)
-		GameExpSound.Kill();
+		(*GameExpSound.Kill)();
 	memset(&GameExpSound, 0, sizeof(GameExpSound));
 	x6502.ResetGameLoaded();
 	PAL &= 1;
@@ -139,7 +139,7 @@ FCEUGI* FCEU::LoadGameVirtual(const char *name, int OverwriteVidMode, bool silen
 		goto endlseq;
 	if (UNIFLoad(fullname, fp))
 		goto endlseq;
-	if (FDSLoad(fullname, fp))
+	if (fds.FDSLoad(fullname, fp))
 		goto endlseq;
 
 	if (!silent)
@@ -361,7 +361,7 @@ void FCEU::Emulate(uint8 **pXBuf, int32 **SoundBuf, int32 *SoundBufSize, int ski
 void FCEU::ResetNES(void) {
 	movie.AddCommand(FCEUNPCMD_RESET);
 	if (!GameInfo) return;
-	GameInterface(GI_RESETM2);
+	(*GameInterface)(GI_RESETM2);
 	FCEUSND_Reset();
 	ppu.Reset();
 	x6502.Reset();
@@ -418,13 +418,13 @@ void FCEU::PowerNES(void) {
 	FCEUSND_Power();
 
 	//Have the external game hardware "powered" after the internal NES stuff.  Needed for the NSF code and VS System code.
-	GameInterface(GI_POWER);
+	(*GameInterface)(GI_POWER);
 	if (GameInfo->type == GIT_VSUNI)
 		FCEU_VSUniPower();
 
 	//if we are in a movie, then reset the saveram
 	if (cart.GetDisableBatteryLoading())
-		GameInterface(GI_RESETSAVE);
+		(*GameInterface)(GI_RESETSAVE);
 
 	timestampbase = 0;
 	x6502.Power();

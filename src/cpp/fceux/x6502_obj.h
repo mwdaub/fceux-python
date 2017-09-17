@@ -34,6 +34,7 @@
 namespace fceu {
 
 class X6502 {
+  friend class FDS;
   public:
     void Run(int32 cycles);
     void RunDebug(int32 cycles);
@@ -70,6 +71,7 @@ class X6502 {
     void (*WriteHook)(struct __X6502 *, unsigned int, uint8);
     #endif
 
+    std::function<void(int)> *MapIRQHook;
   private:
     uint8** RAM;
 
@@ -94,8 +96,6 @@ class X6502 {
 
     uint32 timestamp_;
     uint32 soundtimestamp;
-
-    void (*MapIRQHook)(int a);
 
     int StackAddrBackup;
 

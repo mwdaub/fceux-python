@@ -13,13 +13,13 @@ void Input::Update(void) {
 		}
 	}
 
-	if(fceu->GetGameInfo()->type==GIT_VSUNI)
+	if(fceu->GameInfo->type==GIT_VSUNI)
 		if(coinon) coinon--;
 
 	movie->AddInputState();
 
 	//TODO - should this apply to the movie data? should this be displayed in the input hud?
-	if(fceu->GetGameInfo()->type==GIT_VSUNI){
+	if(fceu->GameInfo->type==GIT_VSUNI){
 		FCEU_VSUniSwap(&joy[0],&joy[1]);
 	}
 }
@@ -30,7 +30,7 @@ void Input::Initialize(void) {
 	memset(joy,0,sizeof(joy));
 	LastStrobe = 0;
 
-	if(fceu->GetGameInfo()->type==GIT_VSUNI) {
+	if(fceu->GameInfo->type==GIT_VSUNI) {
 		handler_->SetReadHandler(0x4016,0x4016,&VSUNIRead0_);
 		handler_->SetReadHandler(0x4017,0x4017,&VSUNIRead1_);
 	} else {
@@ -48,7 +48,7 @@ void Input::Initialize(void) {
 void Input::SetDriver(int port) {
 	switch(joyports[port].type) {
 	case SI_GAMEPAD:
-		if(fceu->GetGameInfo()->type==GIT_VSUNI){
+		if(fceu->GameInfo->type==GIT_VSUNI){
 			joyports[port].driver = &GPCVS;
 		} else {
 			joyports[port].driver= &GPC;

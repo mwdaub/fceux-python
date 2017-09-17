@@ -699,13 +699,13 @@ void Movie::CreateCleanMovie()
 	currMovieData = MovieData();
 	currMovieData.palFlag = fceu->GetCurrentVidSystem(0,0)!=0;
 	currMovieData.romFilename = FileBase;
-	currMovieData.romChecksum = fceu->GetGameInfo()->MD5;
+	currMovieData.romChecksum = fceu->GameInfo->MD5;
 	currMovieData.guid.newGuid();
 	currMovieData.fourscore = fceu->input.GetFourscore();
 	currMovieData.microphone = 0;
 	currMovieData.ports[0] = fceu->input.GetJoyport(0)->type;
 	currMovieData.ports[1] = fceu->input.GetJoyport(1)->type;
-	currMovieData.fds = isFDS;
+	currMovieData.fds = fceu->fds.isFDS;
 	currMovieData.PPUflag = (fceu->ppu.is_newppu() != 0);
 }
 void Movie::ClearCommands()
@@ -868,9 +868,9 @@ void Movie::AddInputState()
 			if(mr->command_reset())
 				fceu->ResetNES();
 			if(mr->command_fds_insert())
-				FCEU_FDSInsert();
+				fceu->fds.FDSInsert();
 			if(mr->command_fds_select())
-				FCEU_FDSSelect();
+				fceu->fds.FDSSelect();
 			if (mr->command_vs_insertcoin())
 				FCEU_VSUniCoin();
 

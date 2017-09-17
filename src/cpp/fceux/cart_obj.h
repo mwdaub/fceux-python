@@ -43,6 +43,9 @@ class Cart {
   friend class PPU;
   public:
 
+    readfunc CartBR_ = [this](uint32 A) { return CartBR(A); };
+    writefunc CartBW_ = [this](uint32 A, uint8 V) { CartBW(A, V); };
+
     void GeniePower(void);
 
     bool OpenGenie(void);
@@ -53,6 +56,36 @@ class Cart {
 
     int GetDisableBatteryLoading(void) { return disableBatteryLoading; };
     void SetDisableBatteryLoading(int val) { disableBatteryLoading = val; };
+
+    void setntamem(uint8 *p, int ram, uint32 b);
+    void setmirrorw(int a, int b, int c, int d);
+    void setmirror(int t);
+
+    void setprg2r(int r, uint32 A, uint32 V);
+    void setprg2(uint32 A, uint32 V);
+    void setprg4r(int r, uint32 A, uint32 V);
+    void setprg4(uint32 A, uint32 V);
+    void setprg8r(int r, uint32 A, uint32 V);
+    void setprg8(uint32 A, uint32 V);
+    void setprg16r(int r, uint32 A, uint32 V);
+    void setprg16(uint32 A, uint32 V);
+    void setprg32r(int r, uint32 A, uint32 V);
+    void setprg32(uint32 A, uint32 V);
+
+    void setchr1r(int r, uint32 A, uint32 V);
+    void setchr2r(int r, uint32 A, uint32 V);
+    void setchr4r(int r, unsigned int A, unsigned int V);
+    void setchr8r(int r, uint32 V);
+
+    void setchr1(uint32 A, uint32 V);
+    void setchr2(uint32 A, uint32 V);
+    void setchr4(uint32 A, uint32 V);
+    void setchr8(uint32 V);
+
+    void ResetCartMapping(void);
+    void SetupCartPRGMapping(int chip, uint8 *p, uint32 size, int ram);
+    void SetupCartCHRMapping(int chip, uint8 *p, uint32 size, int ram);
+    void SetupCartMirroring(int m, int hard, uint8 *extra);
 
   private:
     FCEU* fceu;
@@ -114,40 +147,9 @@ class Cart {
     // Methods.
     inline void setpageptr(int s, uint32 A, uint8 *p, int ram);
 
-    void ResetCartMapping(void);
-    void SetupCartPRGMapping(int chip, uint8 *p, uint32 size, int ram);
-    void SetupCartCHRMapping(int chip, uint8 *p, uint32 size, int ram);
-
     uint8 CartBR(uint32 A);
     void CartBW(uint32 A, uint8 V);
     uint8 CartBROB(uint32 A);
-
-    void setprg2r(int r, uint32 A, uint32 V);
-    void setprg2(uint32 A, uint32 V);
-    void setprg4r(int r, uint32 A, uint32 V);
-    void setprg4(uint32 A, uint32 V);
-    void setprg8r(int r, uint32 A, uint32 V);
-    void setprg8(uint32 A, uint32 V);
-    void setprg16r(int r, uint32 A, uint32 V);
-    void setprg16(uint32 A, uint32 V);
-    void setprg32r(int r, uint32 A, uint32 V);
-    void setprg32(uint32 A, uint32 V);
-
-    void setchr1r(int r, uint32 A, uint32 V);
-    void setchr2r(int r, uint32 A, uint32 V);
-    void setchr4r(int r, unsigned int A, unsigned int V);
-    void setchr8r(int r, uint32 V);
-
-    void setchr1(uint32 A, uint32 V);
-    void setchr2(uint32 A, uint32 V);
-    void setchr4(uint32 A, uint32 V);
-    void setchr8(uint32 V);
-
-    void setntamem(uint8 *p, int ram, uint32 b);
-    void setmirrorw(int a, int b, int c, int d);
-    void setmirror(int t);
-
-    void SetupCartMirroring(int m, int hard, uint8 *extra);
 
     uint8 GenieRead(uint32 A);
     void GenieWrite(uint32 A, uint8 V);

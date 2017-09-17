@@ -41,25 +41,9 @@
 
 namespace fceu {
 
-enum GI {
-	GI_RESETM2	=1,
-	GI_POWER =2,
-	GI_CLOSE =3,
-	GI_RESETSAVE = 4
-};
-
-enum EFCEUI
-{
-	FCEUI_STOPAVI, FCEUI_QUICKSAVE, FCEUI_QUICKLOAD, FCEUI_SAVESTATE, FCEUI_LOADSTATE,
-	FCEUI_NEXTSAVESTATE,FCEUI_PREVIOUSSAVESTATE,FCEUI_VIEWSLOTS,
-	FCEUI_STOPMOVIE, FCEUI_RECORDMOVIE, FCEUI_PLAYMOVIE,
-	FCEUI_OPENGAME, FCEUI_CLOSEGAME,
-	FCEUI_TASEDITOR,
-	FCEUI_RESET, FCEUI_POWER, FCEUI_PLAYFROMBEGINNING, FCEUI_EJECT_DISK, FCEUI_SWITCH_DISK, FCEUI_INSERT_COIN
-};
-
 class FCEU {
   friend class PPU;
+  friend class FDS;
   public:
     FCEU() : handler(), input(&handler), skip_7bit_overclocking(1), AFon(1), AFoff(1),
         movieSubtitles(true), frameAdvance_Delay(FRAMEADVANCE_DELAY_DEFAULT),
@@ -76,7 +60,9 @@ class FCEU {
     Movie movie;
     Cheat cheat;
     Drawing drawing;
+    FDS fds;
 
+    FCEUGI* GameInfo = NULL;
     FCEUS FSettings;
 
     // Methods.
@@ -119,7 +105,6 @@ class FCEU {
     #endif
 
     void SetAutoSS(bool flag) { AutoSS = flag; };
-    FCEUGI* GetGameInfo(void) { return GameInfo; };
 
     int GetCurrentVidSystem(int *slstart, int *slend);
     void SetRenderedLines(int ntscf, int ntscl, int palf, int pall);
@@ -140,8 +125,6 @@ class FCEU {
     // Members.
 
     bool turbo;
-
-    FCEUGI* GameInfo = NULL;
 
     uint8* RAM;
 
@@ -182,8 +165,8 @@ class FCEU {
     // Flag that indicates whether the Auto-save option is enabled or not
     int EnableAutosave;
 
-    void (*GameInterface)(GI h);
-    void (*GameStateRestore)(int version);
+    std::function<void(GI)> *GameInterface;
+    std::function<void(int)> *GameStateRestore;
 
     int rapidAlternator;
     int AutoFirePattern[8];

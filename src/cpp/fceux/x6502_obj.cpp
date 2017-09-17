@@ -396,7 +396,7 @@ void X6502::Run(int32 cycles) {
 
     temp=tcount;
     tcount=0;
-    if(MapIRQHook) MapIRQHook(temp);
+    if(MapIRQHook) (*MapIRQHook)(temp);
    
     if (!overclocking)
       FCEU_SoundCPUHook(temp);

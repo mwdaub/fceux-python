@@ -1,6 +1,8 @@
 #ifndef _STATEH
 #define _STATEH
 
+#include "types_obj.h"
+
 //indicates that the value is a multibyte integer that needs to be put in the correct byte order
 #define FCEUSTATE_RLSB            0x80000000
 
@@ -54,7 +56,7 @@ bool CheckBackupSaveStateExist();	 //Checks if backupsavestate exists
 bool backupSavestates = true;
 bool compressSavestates = true;  //By default FCEUX compresses savestates when a movie is inactive.
 
-void ResetExState(void (*PreSave)(void),void (*PostSave)(void));
+void ResetExState(std::function<void(void)> *PreSave, std::function<void(void)> *PostSave);
 void AddExState(void *v, uint32 s, int type, char *desc);
 
 void FCEU_DrawSaveStates(uint8 *XBuf);
