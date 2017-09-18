@@ -62,9 +62,13 @@ class FCEU {
     Drawing drawing;
     FDS fds;
     File file;
+    iNES ines;
 
     FCEUGI* GameInfo = NULL;
     FCEUS FSettings;
+
+    std::function<void(GI)> *GameInterface;
+    std::function<void(int)> *GameStateRestore;
 
     // Methods.
     bool Initialize(void);
@@ -165,9 +169,6 @@ class FCEU {
 
     // Flag that indicates whether the Auto-save option is enabled or not
     int EnableAutosave;
-
-    std::function<void(GI)> *GameInterface;
-    std::function<void(int)> *GameStateRestore;
 
     int rapidAlternator;
     int AutoFirePattern[8];

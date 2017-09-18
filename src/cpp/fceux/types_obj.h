@@ -163,4 +163,6 @@ typedef std::function<uint8(uint32)> readfunc;
 #define FCEUIOD_AVI		12	//default file for avi output
 #define FCEUIOD__COUNT  13	//base directory override?
 
+#define ARRAY_SIZE(a) (sizeof(a) / sizeof((a)[0]))
+
 #endif // define __FCEU_TYPES

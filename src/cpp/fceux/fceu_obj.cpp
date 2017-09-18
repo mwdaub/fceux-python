@@ -107,7 +107,7 @@ FCEUGI* FCEU::LoadGameVirtual(const char *name, int OverwriteVidMode, bool silen
 	file.GetFileBase(fp->filename.c_str());
 	ResetGameLoaded();
 	//reset parameters so they're cleared just in case a format's loader doesn't know to do the clearing
-	MasterRomInfoParams = TMasterRomInfoParams();
+	ines.MasterRomInfoParams = TMasterRomInfoParams();
 
 	if (!AutosaveStatus)
 		AutosaveStatus = (int*)fceu::dmalloc(sizeof(int) * AutosaveQty);
@@ -133,7 +133,7 @@ FCEUGI* FCEU::LoadGameVirtual(const char *name, int OverwriteVidMode, bool silen
 	GameInfo->cspecial = SIS_NONE;
 
 	//try to load each different format
-	if (iNESLoad(fullname, fp, OverwriteVidMode))
+	if (ines.iNESLoad(fullname, fp, OverwriteVidMode))
 		goto endlseq;
 	if (NSFLoad(fullname, fp))
 		goto endlseq;

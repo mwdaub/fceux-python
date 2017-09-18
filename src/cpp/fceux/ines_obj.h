@@ -1,24 +1,3 @@
-/* FCE Ultra - NES/Famicom Emulator
- *
- * Copyright notice for this file:
- *  Copyright (C) 1998 Bero
- *  Copyright (C) 2002 Xodnizel
- *
- * This program is free software; you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation; either version 2 of the License, or
- * (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with this program; if not, write to the Free Software
- * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
- */
-
 #ifndef _INES_H_
 #define _INES_H_
 
@@ -26,7 +5,11 @@
 #include <string.h>
 #include <map>
 
+#include "types_obj.h"
+#include "git_obj.h"
+
 #include "cart_obj.h"
+#include "file_obj.h"
 
 namespace fceu {
 
@@ -41,18 +24,6 @@ class TMasterRomInfoParams : public std::map<std::string,std::string>
 public:
 	bool ContainsKey(const std::string& key) { return find(key) != end(); }
 };
-
-//mbg merge 6/29/06
-uint8 *ROM;
-uint8 *VROM;
-uint32 VROM_size;
-uint32 ROM_size;
-uint8 *ExtraNTARAM;
-int iNesSave(); //bbit Edited: line added
-int iNesSaveAs(char* name);
-char LoadedRomFName[2048]; //bbit Edited: line added
-const TMasterRomInfo* MasterRomInfo;
-TMasterRomInfoParams MasterRomInfoParams;
 
 //mbg merge 7/19/06 changed to c++ decl format
 struct iNES_HEADER {
@@ -91,7 +62,59 @@ struct iNES_HEADER {
 	}
 };
 
-int iNESLoad(const char *name, FCEUFILE *fp, int OverwriteVidMode);
+class FCEU;
+
+class iNES {
+  public:
+    //mbg merge 6/29/06 - these need to be global
+    uint8 *trainerpoo = NULL;
+    uint8 *ROM = NULL;
+    uint8 *VROM = NULL;
+    uint8 *ExtraNTARAM = NULL;
+    iNES_HEADER head;
+
+    CartInfo iNESCart;
+
+    uint8 Mirroring = 0;
+    uint32 ROM_size = 0;
+    uint32 VROM_size = 0;
+    char LoadedRomFName[2048]; //mbg merge 7/17/06 added
+
+    int CHRRAMSize = -1;
+
+    int MapperNo = 0;
+
+    int iNES2 = 0;
+
+    uint32 iNESGameCRC32 = 0;
+
+    const TMasterRomInfo* MasterRomInfo;
+    TMasterRomInfoParams MasterRomInfoParams;
+
+    //mbg merge 6/29/06
+    int iNesSave(); //bbit Edited: line added
+    int iNesSaveAs(char* name);
+    int iNESLoad(const char *name, FCEUFILE *fp, int OverwriteVidMode);
+
+    uint8 TrainerRead(uint32 A);
+
+    readfunc TrainerRead_ = [this](uint32 A) { return TrainerRead(A); };
+
+    int iNES_Init(int num);
+    void iNES_ExecPower();
+    void iNESGI(GI h);
+    void SetInput(void);
+
+    std::function<void(GI)> iNESGI_ = [this](GI h) { iNESGI(h); };
+
+    void CheckBad(uint64 md5partial);
+    void CheckHInfo(void);
+
+    char* iNesShortFName();
+
+  private:
+    FCEU* fceu;
+};
 
 void NSFVRC6_Init(void);
 void NSFMMC5_Init(void);

@@ -5,6 +5,8 @@
 
 namespace fceu {
 
+SFORMAT FCEUVSUNI_STATEINFO[4];
+
 void FCEU_VSUniPower(void);
 void FCEU_VSUniCheck(uint64 md5partial, int *, uint8 *);
 void FCEU_VSUniDraw(uint8 *XBuf);

@@ -87,6 +87,10 @@ class Cart {
     void SetupCartCHRMapping(int chip, uint8 *p, uint32 size, int ram);
     void SetupCartMirroring(int m, int hard, uint8 *extra);
 
+    void SaveGameSave(CartInfo *LocalHWInfo);
+    void LoadGameSave(CartInfo *LocalHWInfo);
+    void ClearGameSave(CartInfo *LocalHWInfo);
+
   private:
     FCEU* fceu;
 
@@ -159,10 +163,6 @@ class Cart {
     uint8 GenieFix3(uint32 A);
 
     void FixGenieMap(void);
-
-    void SaveGameSave(CartInfo *LocalHWInfo);
-    void LoadGameSave(CartInfo *LocalHWInfo);
-    void ClearGameSave(CartInfo *LocalHWInfo);
 };
 
 } // namespace fceu

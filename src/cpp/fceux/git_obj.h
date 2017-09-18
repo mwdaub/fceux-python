@@ -35,8 +35,15 @@ enum ESI
 	SI_UNSET		= -1,
 	SI_NONE			= 0,
 	SI_GAMEPAD		= 1,
+	SI_ZAPPER		= 2,
+	SI_POWERPADA	= 3,
+	SI_POWERPADB	= 4,
+	SI_ARKANOID		= 5,
+	SI_MOUSE		= 6,
+	SI_SNES			= 7,
+	SI_SNES_MOUSE	= 8,
 
-	SI_COUNT = SI_GAMEPAD
+	SI_COUNT = SI_SNES_MOUSE
 };
 
 enum GI {
