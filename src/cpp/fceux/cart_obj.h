@@ -91,9 +91,6 @@ class Cart {
     void LoadGameSave(CartInfo *LocalHWInfo);
     void ClearGameSave(CartInfo *LocalHWInfo);
 
-  private:
-    FCEU* fceu;
-
     uint8 *Page[32], *VPage[8];
     uint8 **VPageR = VPage;
     uint8 *VPageG[8];
@@ -163,6 +160,9 @@ class Cart {
     uint8 GenieFix3(uint32 A);
 
     void FixGenieMap(void);
+
+  private:
+    FCEU* fceu;
 };
 
 } // namespace fceu

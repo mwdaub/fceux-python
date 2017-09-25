@@ -21,6 +21,8 @@
 
 #include "ppu_obj.h"
 
+#include "fceu_obj.h"
+
 namespace fceu {
 
 void PPU::makeppulut(void) {
@@ -1351,7 +1353,7 @@ int PPU::Loop(int skip) {
 		//I need to figure out the true nature and length of this delay.
 		x6502->Run(12);
 		if (GameInfo->type == GIT_NSF)
-			DoNSFFrame();
+			fceu->nsf.DoNSFFrame();
 		else {
 			if (VBlankON())
 				x6502->TriggerNMI();

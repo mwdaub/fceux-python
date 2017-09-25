@@ -135,7 +135,7 @@ FCEUGI* FCEU::LoadGameVirtual(const char *name, int OverwriteVidMode, bool silen
 	//try to load each different format
 	if (ines.iNESLoad(fullname, fp, OverwriteVidMode))
 		goto endlseq;
-	if (NSFLoad(fullname, fp))
+	if (nsf.NSFLoad(fullname, fp))
 		goto endlseq;
 	if (UNIFLoad(fullname, fp))
 		goto endlseq;

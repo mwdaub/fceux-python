@@ -76,7 +76,6 @@ class Handler {
       }
     }
 
-  private:
     readfunc* ReadNull_;
     writefunc* WriteNull_;
     readfunc* ARead[0x10000];

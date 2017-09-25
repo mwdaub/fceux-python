@@ -82,6 +82,8 @@ class Input {
     bool GetFourscore() { return FSAttached; };
     void SetFourscore(bool attachFourscore) { FSAttached = attachFourscore; };
 
+    uint8 GetJoyJoy(void);
+
   private:
     // Members.
     Handler* handler_;

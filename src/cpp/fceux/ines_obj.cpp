@@ -837,7 +837,7 @@ int iNES::iNESLoad(const char *name, FCEUFILE *fp, int OverwriteVidMode) {
 	fceu->GameInfo->mappernum = MapperNo;
 	fceu->cart.LoadGameSave(&iNESCart);
 
-	strcpy(LoadedRomFName, name); //bbit edited: line added
+	strcpy(fceu->LoadedRomFName, name); //bbit edited: line added
 
 	// Extract Filename only. Should account for Windows/Unix this way.
 	if (strrchr(name, '/')) {
@@ -871,7 +871,7 @@ int iNES::iNESLoad(const char *name, FCEUFILE *fp, int OverwriteVidMode) {
 int iNES::iNesSave() {
 	char name[2048];
 
-	strcpy(name, LoadedRomFName);
+	strcpy(name, fceu->LoadedRomFName);
 	if (strcmp(name + strlen(name) - 4, ".nes") != 0) { //para edit
 		strcat(name, ".nes");
 	}
@@ -917,9 +917,9 @@ int iNES::iNesSaveAs(char* name)
 char* iNES::iNesShortFName() {
 	char *ret;
 
-	if (!(ret = strrchr(LoadedRomFName, '\\')))
+	if (!(ret = strrchr(fceu->LoadedRomFName, '\\')))
 	{
-		if (!(ret = strrchr(LoadedRomFName, '/')))
+		if (!(ret = strrchr(fceu->LoadedRomFName, '/')))
 			return 0;
 	}
 	return ret + 1;

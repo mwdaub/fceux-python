@@ -60,6 +60,12 @@ void Input::SetDriver(int port) {
 	}
 }
 
+//This function is a quick hack to get the NSF player to use emulated gamepad input.
+uint8 Input::GetJoyJoy(void)
+{
+	return(joy[0]|joy[1]|joy[2]|joy[3]);
+}
+
 uint8 Input::VSUNIRead0(uint32 A) {
 	movie->SetLagFlag(0);
 	uint8 ret=0;

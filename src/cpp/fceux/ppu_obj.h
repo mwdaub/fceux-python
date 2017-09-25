@@ -259,6 +259,8 @@ class PPU;
 typedef uint8 (FASTCALL *ppureadfunc)(PPU* ppu, uint32 A);
 typedef void (*ppuwritefunc)(PPU* ppu, uint32 A, uint8 V);
 
+class FCEU;
+
 class PPU {
   friend class Cart;
   public:
@@ -325,6 +327,8 @@ class PPU {
     PPU() : bgdata(this) {}
 
     // Members.
+    FCEU* fceu;
+
     bool* DMC_7bit;
     bool* paldeemphswap;
 

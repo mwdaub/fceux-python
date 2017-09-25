@@ -78,7 +78,6 @@ class iNES {
     uint8 Mirroring = 0;
     uint32 ROM_size = 0;
     uint32 VROM_size = 0;
-    char LoadedRomFName[2048]; //mbg merge 7/17/06 added
 
     int CHRRAMSize = -1;
 

@@ -39,6 +39,15 @@
 
 #define FRAMEADVANCE_DELAY_DEFAULT 10
 
+#define JOY_A   1
+#define JOY_B   2
+#define JOY_SELECT      4
+#define JOY_START       8
+#define JOY_UP  0x10
+#define JOY_DOWN        0x20
+#define JOY_LEFT        0x40
+#define JOY_RIGHT       0x80
+
 namespace fceu {
 
 class FCEU {
@@ -63,12 +72,19 @@ class FCEU {
     FDS fds;
     File file;
     iNES ines;
+    NSF nsf;
 
     FCEUGI* GameInfo = NULL;
     FCEUS FSettings;
 
+    uint8* RAM;
+
     std::function<void(GI)> *GameInterface;
     std::function<void(int)> *GameStateRestore;
+
+    int PAL;
+
+    char LoadedRomFName[2048];
 
     // Methods.
     bool Initialize(void);
@@ -131,10 +147,7 @@ class FCEU {
 
     bool turbo;
 
-    uint8* RAM;
-
     int dendy;
-    int PAL;
     int pal_emulation;
 
     bool overclock_enabled;
