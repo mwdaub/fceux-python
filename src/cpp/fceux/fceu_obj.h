@@ -25,6 +25,7 @@
 #include "ines_obj.h"
 #include "movie_obj.h"
 #include "nsf_obj.h"
+#include "palette_obj.h"
 #include "ppu_obj.h"
 #include "state_obj.h"
 #include "unif_obj.h"
@@ -73,6 +74,7 @@ class FCEU {
     File file;
     iNES ines;
     NSF nsf;
+    Palette palette;
 
     FCEUGI* GameInfo = NULL;
     FCEUS FSettings;
@@ -119,7 +121,6 @@ class FCEU {
     void TogglePPU();
 
     void SetNESDeemph_OldHacky(uint8 d, int force);
-    void DrawTextTrans(uint8 *dest, uint32 width, uint8 *textmsg, uint8 fgcolor);
     void PutImage(void);
     #ifdef FRAMESKIP
     void PutImageDummy(void);

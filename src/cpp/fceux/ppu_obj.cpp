@@ -1457,7 +1457,7 @@ int PPU::Loop(int skip) {
 				}
 				deempcnt[x] = 0;
 			}
-			SetNESDeemph_OldHacky(maxref, 0);
+			fceu->palette.SetNESDeemph_OldHacky(maxref, 0);
 		}
 	}	//else... to if(ppudead)
 

@@ -72,7 +72,7 @@ void FCEU::ResetGameLoaded(void) {
 	memset(&GameExpSound, 0, sizeof(GameExpSound));
 	x6502.ResetGameLoaded();
 	PAL &= 1;
-	default_palette_selection = 0;
+	palette.default_palette_selection = 0;
 }
 
 //name should be UTF-8, hopefully, or else there may be trouble
@@ -171,10 +171,10 @@ FCEUGI* FCEU::LoadGameVirtual(const char *name, int OverwriteVidMode, bool silen
 	PowerNES();
 
 	if (GameInfo->type != GIT_NSF)
-		FCEU_LoadGamePalette();
+		palette.LoadGamePalette();
 
-	FCEU_ResetPalette();
-	FCEU_ResetMessages();   // Save state, status messages, etc.
+	palette.ResetPalette();
+	palette.ResetMessages();   // Save state, status messages, etc.
 
 	if (!lastpal && PAL) {
         fceu::DispMessage("PAL mode set", 0);
@@ -481,7 +481,7 @@ void FCEU::SetVidSystem(int a) {
 	FSettings.PAL = a ? 1 : 0;
 	if (GameInfo) {
 		ResetVidSys();
-		FCEU_ResetPalette();
+		palette.ResetPalette();
 	}
 }
 
