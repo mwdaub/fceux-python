@@ -2,7 +2,7 @@
 #define _VSUNI_H_
 
 #include "types_obj.h"
-#include "state_obj.h"
+#include "git_obj.h"
 
 namespace fceu {
 

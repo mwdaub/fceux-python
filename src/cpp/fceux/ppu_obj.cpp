@@ -1247,13 +1247,13 @@ void PPU::CopySprites(uint8 *target) {
 void PPU::SetVideoSystem(int w) {
 	if (w) {
 		scanlines_per_frame = fceu->dendy ? 262: 312;
-		fceu->FSettings->FirstSLine = fceu->FSettings->UsrFirstSLine[1];
-		fceu->FSettings->LastSLine = fceu->FSettings->UsrLastSLine[1];
+		fceu->FSettings.FirstSLine = fceu->FSettings.UsrFirstSLine[1];
+		fceu->FSettings.LastSLine = fceu->FSettings.UsrLastSLine[1];
 		//paldeemphswap = 1; // dendy has pal ppu, and pal ppu has these swapped
 	} else {
 		scanlines_per_frame = 262;
-		fceu->FSettings->FirstSLine = fceu->FSettings->UsrFirstSLine[0];
-		fceu->FSettings->LastSLine = fceu->FSettings->UsrLastSLine[0];
+		fceu->FSettings.FirstSLine = fceu->FSettings.UsrFirstSLine[0];
+		fceu->FSettings.LastSLine = fceu->FSettings.UsrLastSLine[0];
 		//paldeemphswap = 0;
 	}
 }

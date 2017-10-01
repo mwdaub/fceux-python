@@ -408,7 +408,7 @@ void NSF::DrawNSF(uint8 *XBuf)
 		int32 mul=0;
 
 		int l;
-		l=GetSoundBuffer(&Bufpl);
+		l=fceu->sound.GetSoundBuffer(&Bufpl);
 
 		if(special==0)
 		{

@@ -17,7 +17,6 @@
 #include "utils/general_obj.h"
 #include "utils/memory_obj.h"
 
-#include "ppu_obj.h"
 #include "cart_obj.h"
 #include "cheat_obj.h"
 #include "fds_obj.h"
@@ -28,6 +27,7 @@
 #include "movie_obj.h"
 #include "nsf_obj.h"
 #include "palette_obj.h"
+#include "ppu_obj.h"
 #include "sound_obj.h"
 #include "state_obj.h"
 #include "unif_obj.h"

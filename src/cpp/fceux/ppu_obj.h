@@ -315,8 +315,6 @@ class PPU {
     PPU() : bgdata(this) {}
 
     // Members.
-    FCEU* fceu;
-
     bool* DMC_7bit;
     bool* paldeemphswap;
 
@@ -408,7 +406,6 @@ class PPU {
     readfunc ARAML_ = [this](uint32 A) { return ARAML(A); };
     readfunc ARAMH_ = [this](uint32 A) { return ARAMH(A); };
 
-  private:
     // Members.
     static BITREVLUT<uint8, 8> bitrevlut;
 
@@ -685,6 +682,9 @@ class PPU {
 		    runppu(kFetchTime);
 	    }
     }
+
+  private:
+    FCEU* fceu;
 };
 
 } // namespace fceu

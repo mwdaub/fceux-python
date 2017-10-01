@@ -2,6 +2,7 @@
 #define _SOUND_H_
 
 #include "types_obj.h"
+#include "git_obj.h"
 
 #include "debug_obj.h"
 #include "filter_obj.h"

@@ -115,7 +115,6 @@ extern void IncrementInstructionsCounters();
 
 //internal variables that debuggers will want access to
 extern uint8 *vnapage[4],*VPage[8];
-extern uint8 PPU[4],PALRAM[0x20],SPRAM[0x100],VRAMBuffer,PPUGenLatch,XOffset;
 extern uint32 FCEUPPU_PeekAddress();
 extern int numWPs;
 
@@ -143,8 +142,6 @@ public:
 		jsrcount = 0;
 	}
 };
-
-extern NSF_HEADER NSFHeader;
 
 extern uint8 PSG[0x10];
 extern uint8 DMCFormat;

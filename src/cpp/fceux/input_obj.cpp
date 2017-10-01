@@ -31,13 +31,13 @@ void Input::Initialize(void) {
 	LastStrobe = 0;
 
 	if(fceu->GameInfo->type==GIT_VSUNI) {
-		handler_->SetReadHandler(0x4016,0x4016,&VSUNIRead0_);
-		handler_->SetReadHandler(0x4017,0x4017,&VSUNIRead1_);
+		fceu->handler.SetReadHandler(0x4016,0x4016,&VSUNIRead0_);
+		fceu->handler.SetReadHandler(0x4017,0x4017,&VSUNIRead1_);
 	} else {
-		handler_->SetReadHandler(0x4016,0x4017,&JPRead_);
+		fceu->handler.SetReadHandler(0x4016,0x4017,&JPRead_);
     }
 
-	handler_->SetWriteHandler(0x4016,0x4016,&B4016_);
+	fceu->handler.SetWriteHandler(0x4016,0x4016,&B4016_);
 
 	//force the port drivers to be setup
 	SetDriver(0);
