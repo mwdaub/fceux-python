@@ -6,7 +6,7 @@ namespace fceu {
 
 void Input::Update(void) {
 	//tell all drivers to poll input and set up their logical states
-	if(!movie->Mode(MOVIEMODE_PLAY))
+	if(!fceu->movie.Mode(MOVIEMODE_PLAY))
 	{
 		for(int port=0;port<2;port++){
 			joyports[port].driver->Update(port,joyports[port].ptr,joyports[port].attrib);
@@ -16,7 +16,7 @@ void Input::Update(void) {
 	if(fceu->GameInfo->type==GIT_VSUNI)
 		if(coinon) coinon--;
 
-	movie->AddInputState();
+	fceu->movie.AddInputState();
 
 	//TODO - should this apply to the movie data? should this be displayed in the input hud?
 	if(fceu->GameInfo->type==GIT_VSUNI){
@@ -67,7 +67,7 @@ uint8 Input::GetJoyJoy(void)
 }
 
 uint8 Input::VSUNIRead0(uint32 A) {
-	movie->SetLagFlag(0);
+	fceu->movie.SetLagFlag(0);
 	uint8 ret=0;
 
 	ret|=(joyports[0].driver->Read(0))&1;
@@ -79,7 +79,7 @@ uint8 Input::VSUNIRead0(uint32 A) {
 }
 
 uint8 Input::VSUNIRead1(uint32 A) {
-	movie->SetLagFlag(0);
+	fceu->movie.SetLagFlag(0);
 	uint8 ret=0;
 
 	ret|=(joyports[1].driver->Read(1))&1;
@@ -88,12 +88,12 @@ uint8 Input::VSUNIRead1(uint32 A) {
 }
 
 uint8 Input::JPRead(uint32 A) {
-	movie->SetLagFlag(0);
+	fceu->movie.SetLagFlag(0);
 	uint8 ret=0;
 
 	ret|=joyports[A&1].driver->Read(A&1);
 
-	ret|=x6502_->DB()&0xC0;
+	ret|=fceu->x6502.DB()&0xC0;
 
 	return(ret);
 }

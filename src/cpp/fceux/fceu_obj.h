@@ -17,16 +17,18 @@
 #include "utils/general_obj.h"
 #include "utils/memory_obj.h"
 
+#include "ppu_obj.h"
 #include "cart_obj.h"
 #include "cheat_obj.h"
 #include "fds_obj.h"
 #include "file_obj.h"
 #include "handler_obj.h"
 #include "ines_obj.h"
+#include "input_obj.h"
 #include "movie_obj.h"
 #include "nsf_obj.h"
 #include "palette_obj.h"
-#include "ppu_obj.h"
+#include "sound_obj.h"
 #include "state_obj.h"
 #include "unif_obj.h"
 #include "vsuni_obj.h"
@@ -52,10 +54,9 @@
 namespace fceu {
 
 class FCEU {
-  friend class PPU;
   friend class FDS;
   public:
-    FCEU() : handler(), input(&handler), skip_7bit_overclocking(1), AFon(1), AFoff(1),
+    FCEU() : handler(), skip_7bit_overclocking(1), AFon(1), AFoff(1),
         movieSubtitles(true), frameAdvance_Delay(FRAMEADVANCE_DELAY_DEFAULT),
         AutosaveQty(4), AutosaveFrequency(256), AutoFirePatternLength(2) {
       AutoFirePattern[0] = 1;
@@ -75,6 +76,7 @@ class FCEU {
     iNES ines;
     NSF nsf;
     Palette palette;
+    Sound sound;
 
     FCEUGI* GameInfo = NULL;
     FCEUS FSettings;
@@ -86,7 +88,12 @@ class FCEU {
 
     int PAL;
 
+    int dendy;
+    int pal_emulation;
+
     char LoadedRomFName[2048];
+
+    bool swapDuty = false;
 
     // Methods.
     bool Initialize(void);
@@ -147,9 +154,6 @@ class FCEU {
     // Members.
 
     bool turbo;
-
-    int dendy;
-    int pal_emulation;
 
     bool overclock_enabled;
     bool overclocking;

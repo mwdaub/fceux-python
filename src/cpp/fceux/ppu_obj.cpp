@@ -1,24 +1,3 @@
-/* FCE Ultra - NES/Famicom Emulator
- *
- * Copyright notice for this file:
- *  Copyright (C) 1998 BERO
- *  Copyright (C) 2003 Xodnizel
- *
- * This program is free software; you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation; either version 2 of the License, or
- * (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with this program; if not, write to the Free Software
- * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
- */
-
 #include "ppu_obj.h"
 
 #include "fceu_obj.h"
@@ -87,7 +66,7 @@ void PPU::Write_Default(uint32 A, uint8 V) {
 
 	if (tmp < 0x2000) {
 		if (PPUCHRRAM & (1 << (tmp >> 10)))
-			cart->VPage[tmp >> 10][tmp] = V;
+			fceu->cart.VPage[tmp >> 10][tmp] = V;
 	} else if (tmp < 0x3F00) {
 		if (PPUNTARAM & (1 << ((tmp & 0xF00) >> 10)))
 			vnapage[((tmp & 0xF00) >> 10)][tmp & 0x3FF] = V;
@@ -104,7 +83,7 @@ void PPU::Write_Default(uint32 A, uint8 V) {
 
 int PPU::GetCHRAddress(int A) {
 	if (cdloggerVideoDataSize) {
-		int result = &(cart->VPage)[A >> 10][A] - (cart->CHRptr)[0];
+		int result = &(fceu->cart.VPage)[A >> 10][A] - (fceu->cart.CHRptr)[0];
 		if ((result >= 0) && (result < (int)cdloggerVideoDataSize))
 			return result;
 	} else
@@ -118,7 +97,7 @@ uint8 FASTCALL PPU::Read_Default(uint32 A) {
 	if (PPU_hook) PPU_hook(A);
 
 	if (tmp < 0x2000) {
-		return cart->VPage[tmp >> 10][tmp];
+		return fceu->cart.VPage[tmp >> 10][tmp];
 	} else if (tmp < 0x3F00) {
 		return vnapage[(tmp >> 10) & 0x3][tmp & 0x3FF];
 	} else {
@@ -365,7 +344,7 @@ uint8 PPU::A2007(uint32 A) {
 			#endif
 			{
 				if ((tmp - 0x1000) < 0x2000)
-					VRAMBuffer = cart->VPage[(tmp - 0x1000) >> 10][tmp - 0x1000];
+					VRAMBuffer = fceu->cart.VPage[(tmp - 0x1000) >> 10][tmp - 0x1000];
 				else
 					VRAMBuffer = vnapage[((tmp - 0x1000) >> 10) & 0x3][(tmp - 0x1000) & 0x3FF];
 				if (PPU_hook) PPU_hook(tmp);
@@ -387,7 +366,7 @@ uint8 PPU::A2007(uint32 A) {
 						//probably wrong CD logging in this case...
 						VRAMBuffer = *MMC5BGVRAMADR(tmp);
 					}
-					else VRAMBuffer = cart->VPage[tmp >> 10][tmp];
+					else VRAMBuffer = fceu->cart.VPage[tmp >> 10][tmp];
 
 				} else if (tmp < 0x3F00)
 					VRAMBuffer = vnapage[(tmp >> 10) & 0x3][tmp & 0x3FF];
@@ -428,7 +407,7 @@ void PPU::B2000(uint32 A, uint8 V) {
 	PPUGenLatch = V;
 
 	if (!(data[0] & 0x80) && (V & 0x80) && (Status() & 0x80))
-		x6502->TriggerNMI2();
+		fceu->x6502.TriggerNMI2();
 
 	data[0] = V;
 	TempAddr &= 0xF3FF;
@@ -553,7 +532,7 @@ void PPU::B2007(uint32 A, uint8 V) {
 		PPUGenLatch = V;
 		if (tmp < 0x2000) {
 			if (PPUCHRRAM & (1 << (tmp >> 10)))
-				cart->VPage[tmp >> 10][tmp] = V;
+				fceu->cart.VPage[tmp >> 10][tmp] = V;
 		} else if (tmp < 0x3F00) {
 			if (PPUNTARAM & (1 << ((tmp & 0xF00) >> 10)))
 				vnapage[((tmp & 0xF00) >> 10)][tmp & 0x3FF] = V;
@@ -580,17 +559,17 @@ void PPU::B4014(uint32 A, uint8 V) {
 	int x;
 
 	for (x = 0; x < 256; x++)
-		x6502->DMW(0x2004, x6502->DMR(t + x));
+		fceu->x6502.DMW(0x2004, fceu->x6502.DMR(t + x));
 	SpriteDMA = V;
 }
 
 void PPU::ResetRL(uint8 *target) {
 	memset(target, 0xFF, 256);
-	input->ScanlineHook(0, 0, 0, 0);
+	fceu->input.ScanlineHook(0, 0, 0, 0);
 	Plinef = target;
 	Pline = target;
 	firsttile = 0;
-	linestartts = x6502->timestamp() * 48 + x6502->count();
+	linestartts = fceu->x6502.timestamp() * 48 + fceu->x6502.count();
 	tofix = 0;
 	LineUpdate();
 	tofix = 1;
@@ -692,7 +671,7 @@ void PPU::RefreshLine(int lastpixel) {
 		}
 
 		if ((lastpixel - 16) >= 0) {
-			input->ScanlineHook(Plinef, spork ? sprlinebuf : 0, linestartts, lasttile * 8 - 16);
+			fceu->input.ScanlineHook(Plinef, spork ? sprlinebuf : 0, linestartts, lasttile * 8 - 16);
 		}
 		return;
 	}
@@ -707,7 +686,7 @@ void PPU::RefreshLine(int lastpixel) {
 	//It's probably not totally correct for carts in "SL" mode.
 
 #define PPUT_MMC5
-	if (MMC5Hack && cart->geniestage != 1) {
+	if (MMC5Hack && fceu->cart.geniestage != 1) {
 		if (MMC5HackCHRMode == 0 && (MMC5HackSPMode & 0x80)) {
 			int tochange = MMC5HackSPMode & 0x1F;
 			tochange -= firsttile;
@@ -817,7 +796,7 @@ void PPU::RefreshLine(int lastpixel) {
 	CheckSpriteHit(lastpixel);
 
 	if ((lastpixel - 16) >= 0) {
-		input->ScanlineHook(Plinef, spork ? sprlinebuf : 0, linestartts, lasttile * 8 - 16);
+		fceu->input.ScanlineHook(Plinef, spork ? sprlinebuf : 0, linestartts, lasttile * 8 - 16);
 	}
 	Pline = P;
 	firsttile = lasttile;
@@ -853,9 +832,9 @@ INLINE void PPU::Fixit2(void) {
 void MMC5_hb(int);		//Ugh ugh ugh.
 void PPU::DoLine(void) {
 	if (scanline >= 240 && scanline != totalscanlines) {
-		x6502->Run(256 + 69);
+		fceu->x6502.Run(256 + 69);
 		scanline++;
-		x6502->Run(16);
+		fceu->x6502.Run(16);
 		return;
 	}
 
@@ -865,7 +844,7 @@ void PPU::DoLine(void) {
 
 	if (MMC5Hack) MMC5_hb(scanline);
 
-	x6502->Run(256);
+	fceu->x6502.Run(256);
 	EndRL();
 
 	if (!renderbg) {// User asked to not display background data.
@@ -912,15 +891,15 @@ void PPU::DoLine(void) {
 		FetchSpriteData();
 
 	if (GameHBIRQHook && (ScreenON() || SpriteON()) && ((data[0] & 0x38) != 0x18)) {
-		x6502->Run(6);
+		fceu->x6502.Run(6);
 		Fixit2();
-		x6502->Run(4);
+		fceu->x6502.Run(4);
 		GameHBIRQHook();
-		x6502->Run(85 - 16 - 10);
+		fceu->x6502.Run(85 - 16 - 10);
 	} else {
-		x6502->Run(6);	// Tried 65, caused problems with Slalom(maybe others)
+		fceu->x6502.Run(6);	// Tried 65, caused problems with Slalom(maybe others)
 		Fixit2();
-		x6502->Run(85 - 6 - 16);
+		fceu->x6502.Run(85 - 6 - 16);
 
 		// A semi-hack for Star Trek: 25th Anniversary
 		if (GameHBIRQHook && (ScreenON() || SpriteON()) && ((data[0] & 0x38) != 0x18))
@@ -937,7 +916,7 @@ void PPU::DoLine(void) {
 	if (scanline < 240) {
 		ResetRL(XBuf + (scanline << 8));
 	}
-	x6502->Run(16);
+	fceu->x6502.Run(16);
 }
 
 void PPU::FetchSpriteData(void) {
@@ -986,7 +965,7 @@ void PPU::FetchSpriteData(void) {
 					}
 
 					/* Fix this geniestage hack */
-					if (MMC5Hack && cart->geniestage != 1)
+					if (MMC5Hack && fceu->cart.geniestage != 1)
 						C = MMC5SPRVRAMADR(vadr);
 					else
 						C = VRAMADR(vadr);
@@ -1267,14 +1246,14 @@ void PPU::CopySprites(uint8 *target) {
 
 void PPU::SetVideoSystem(int w) {
 	if (w) {
-		scanlines_per_frame = dendy ? 262: 312;
-		FSettings->FirstSLine = FSettings->UsrFirstSLine[1];
-		FSettings->LastSLine = FSettings->UsrLastSLine[1];
+		scanlines_per_frame = fceu->dendy ? 262: 312;
+		fceu->FSettings->FirstSLine = fceu->FSettings->UsrFirstSLine[1];
+		fceu->FSettings->LastSLine = fceu->FSettings->UsrLastSLine[1];
 		//paldeemphswap = 1; // dendy has pal ppu, and pal ppu has these swapped
 	} else {
 		scanlines_per_frame = 262;
-		FSettings->FirstSLine = FSettings->UsrFirstSLine[0];
-		FSettings->LastSLine = FSettings->UsrLastSLine[0];
+		fceu->FSettings->FirstSLine = fceu->FSettings->UsrFirstSLine[0];
+		fceu->FSettings->LastSLine = fceu->FSettings->UsrLastSLine[0];
 		//paldeemphswap = 0;
 	}
 }
@@ -1300,38 +1279,38 @@ void PPU::Power(void) {
 	memset(SPRAM, 0x00, 0x100);
 	Reset();
 
-	handler->SetReadHandler(0x0000, 0xFFFF, &ANull_);
-	handler->SetWriteHandler(0x0000, 0xFFFF, &BNull_);
+	fceu->handler.SetReadHandler(0x0000, 0xFFFF, &ANull_);
+	fceu->handler.SetWriteHandler(0x0000, 0xFFFF, &BNull_);
 
-	handler->SetReadHandler(0, 0x7FF, &ARAML_);
-	handler->SetWriteHandler(0, 0x7FF, &BRAML_);
+	fceu->handler.SetReadHandler(0, 0x7FF, &ARAML_);
+	fceu->handler.SetWriteHandler(0, 0x7FF, &BRAML_);
 
-	handler->SetReadHandler(0x800, 0x1FFF, &ARAMH_);	// Part of a little
-	handler->SetWriteHandler(0x800, 0x1FFF, &BRAMH_);	//hack for a small speed boost.
+	fceu->handler.SetReadHandler(0x800, 0x1FFF, &ARAMH_);	// Part of a little
+	fceu->handler.SetWriteHandler(0x800, 0x1FFF, &BRAMH_);	//hack for a small speed boost.
 
 	for (int x = 0x2000; x < 0x4000; x += 8) {
-		handler->SetReadHandler(x, &A200x_);
-		handler->SetWriteHandler(x, &B2000_);
-		handler->SetReadHandler(x + 1, &A200x_);
-		handler->SetWriteHandler(x + 1, &B2001_);
-		handler->SetReadHandler(x + 2, &A2002_);
-		handler->SetWriteHandler(x + 2, &B2002_);
-		handler->SetReadHandler(x + 3, &A200x_);
-		handler->SetWriteHandler(x + 3, &B2003_);
-		handler->SetReadHandler(x + 4, &A2004_);
-		handler->SetWriteHandler(x + 4, &B2004_);
-		handler->SetReadHandler(x + 5, &A200x_);
-		handler->SetWriteHandler(x + 5, &B2005_);
-		handler->SetReadHandler(x + 6, &A200x_);
-		handler->SetWriteHandler(x + 6, &B2006_);
-		handler->SetReadHandler(x + 7, &A2007_);
-		handler->SetWriteHandler(x + 7, &B2007_);
+		fceu->handler.SetReadHandler(x, &A200x_);
+		fceu->handler.SetWriteHandler(x, &B2000_);
+		fceu->handler.SetReadHandler(x + 1, &A200x_);
+		fceu->handler.SetWriteHandler(x + 1, &B2001_);
+		fceu->handler.SetReadHandler(x + 2, &A2002_);
+		fceu->handler.SetWriteHandler(x + 2, &B2002_);
+		fceu->handler.SetReadHandler(x + 3, &A200x_);
+		fceu->handler.SetWriteHandler(x + 3, &B2003_);
+		fceu->handler.SetReadHandler(x + 4, &A2004_);
+		fceu->handler.SetWriteHandler(x + 4, &B2004_);
+		fceu->handler.SetReadHandler(x + 5, &A200x_);
+		fceu->handler.SetWriteHandler(x + 5, &B2005_);
+		fceu->handler.SetReadHandler(x + 6, &A200x_);
+		fceu->handler.SetWriteHandler(x + 6, &B2006_);
+		fceu->handler.SetReadHandler(x + 7, &A2007_);
+		fceu->handler.SetWriteHandler(x + 7, &B2007_);
 	}
-    handler->SetWriteHandler(0x4014, &B4014_);
+    fceu->handler.SetWriteHandler(0x4014, &B4014_);
 }
 
 int PPU::Loop(int skip) {
-	if ((newppu) && (GameInfo->type != GIT_NSF)) {
+	if ((newppu) && (fceu->GameInfo->type != GIT_NSF)) {
 		int NewLoop(int skip);
 		return NewLoop(skip);
 	}
@@ -1339,10 +1318,10 @@ int PPU::Loop(int skip) {
 	//Needed for Knight Rider, possibly others.
 	if (ppudead) {
 		memset(XBuf, 0x80, 256 * 240);
-		x6502->Run(scanlines_per_frame * (256 + 85));
+		fceu->x6502.Run(scanlines_per_frame * (256 + 85));
 		ppudead--;
 	} else {
-		x6502->Run(256 + 85);
+		fceu->x6502.Run(256 + 85);
 		updateStatus(Status() | 0x80);
 
 		//Not sure if this is correct.  According to Matt Conte and my own tests, it is.
@@ -1351,23 +1330,23 @@ int PPU::Loop(int skip) {
 		data[3] = PPUSPL = 0;
 
 		//I need to figure out the true nature and length of this delay.
-		x6502->Run(12);
-		if (GameInfo->type == GIT_NSF)
+		fceu->x6502.Run(12);
+		if (fceu->GameInfo->type == GIT_NSF)
 			fceu->nsf.DoNSFFrame();
 		else {
 			if (VBlankON())
-				x6502->TriggerNMI();
+				fceu->x6502.TriggerNMI();
 		}
-		x6502->Run((scanlines_per_frame - 242) * (256 + 85) - 12);
+		fceu->x6502.Run((scanlines_per_frame - 242) * (256 + 85) - 12);
 		if (overclock_enabled && vblankscanlines) {
 			if (!DMC_7bit || !skip_7bit_overclocking) {
 				overclocking = 1;
-				x6502->Run(vblankscanlines * (256 + 85) - 12);
+				fceu->x6502.Run(vblankscanlines * (256 + 85) - 12);
 				overclocking = 0;
 			}
 		}
 		updateStatus(Status() & 0x1f);
-		x6502->Run(256);
+		fceu->x6502.Run(256);
 
 		{
 			int x;
@@ -1382,7 +1361,7 @@ int PPU::Loop(int skip) {
 				if (GameHBIRQHook2)
 					GameHBIRQHook2();
 			}
-			x6502->Run(85 - 16);
+			fceu->x6502.Run(85 - 16);
 			if (ScreenON() || SpriteON()) {
 				RefreshAddr = TempAddr;
 				if (PPU_hook) PPU_hook(RefreshAddr & 0x3fff);
@@ -1392,11 +1371,11 @@ int PPU::Loop(int skip) {
 			spork = numsprites = 0;
 			ResetRL(XBuf);
 
-			x6502->Run(16 - kook);
+			fceu->x6502.Run(16 - kook);
 			kook ^= 1;
 		}
-		if (GameInfo->type == GIT_NSF)
-			x6502->Run((256 + 85) * normalscanlines);
+		if (fceu->GameInfo->type == GIT_NSF)
+			fceu->x6502.Run((256 + 85) * normalscanlines);
 		#ifdef FRAMESKIP
 		else if (skip) {
 			int y;
@@ -1406,19 +1385,19 @@ int PPU::Loop(int skip) {
 
 			updateStatus(Status() | 0x20);	// Fixes "Bee 52".  Does it break anything?
 			if (GameHBIRQHook) {
-				x6502->Run(256);
+				fceu->x6502.Run(256);
 				for (scanline = 0; scanline < 240; scanline++) {
 					if (ScreenON() || SpriteON())
 						GameHBIRQHook();
 					if (scanline == y && SpriteON()) updateStatus(Status() | 0x40);
-					x6502->Run((scanline == 239) ? 85 : (256 + 85));
+					fceu->x6502.Run((scanline == 239) ? 85 : (256 + 85));
 				}
 			} else if (y < 240) {
-				x6502->Run((256 + 85) * y);
+				fceu->x6502.Run((256 + 85) * y);
 				if (SpriteON()) updateStatus(Status() | 0x40);	// Quick and very dirty hack.
-				x6502->Run((256 + 85) * (240 - y));
+				fceu->x6502.Run((256 + 85) * (240 - y));
 			} else
-				x6502->Run((256 + 85) * 240);
+				fceu->x6502.Run((256 + 85) * 240);
 		}
 		#endif
 		else {
@@ -1497,7 +1476,7 @@ void PPU::runppu(int x) {
 	ppur.status.cycle = (ppur.status.cycle + x) % ppur.status.end_cycle;
 	if (!new_ppu_reset) // if resetting, suspend CPU until the first frame
 	{
-		x6502->Run(x);
+		fceu->x6502.Run(x);
 	}
 }
 
@@ -1527,7 +1506,7 @@ int PPU::NewLoop(int skip) {
 		// should write to those regs during that time, it needs
 		// to wait for vblank
 		ppur.status.sl = 241;
-		if (PAL)
+		if (fceu->PAL)
 			runppu(70 * kLineTime);
 		else
 			runppu(20 * kLineTime);
@@ -1554,8 +1533,8 @@ int PPU::NewLoop(int skip) {
 	  for(int dot=0;dot<delay;dot++)
 	  	runppu(1);
 
-	  if (VBlankON()) x6502->TriggerNMI();
-	  int sltodo = PAL?70:20;
+	  if (VBlankON()) fceu->x6502.TriggerNMI();
+	  int sltodo = fceu->PAL?70:20;
 	  	
 	  //formerly: runppu(20 * (kLineTime) - delay);
 	  for(int S=0;S<sltodo;S++)
@@ -1589,7 +1568,7 @@ int PPU::NewLoop(int skip) {
 	  	g_rasterpos = 0;
 	  	ppur.status.sl = sl;
 
-	  	linestartts = x6502->timestamp() * 48 + x6502->count(); // pixel timestamp for debugger
+	  	linestartts = fceu->x6502.timestamp() * 48 + fceu->x6502.count(); // pixel timestamp for debugger
 
 	  	const int yp = sl - 1;
 	  	ppuphase = PPUPHASE_BG;
@@ -1884,7 +1863,7 @@ int PPU::NewLoop(int skip) {
 	  	//(not implemented yet)
 	  	runppu(kFetchTime);
 	  	if (sl == 0) {
-	  		if (idleSynch && PPUON() && !PAL)
+	  		if (idleSynch && PPUON() && !fceu->PAL)
 	  			ppur.status.end_cycle = 340;
 	  		else
 	  			ppur.status.end_cycle = 341;
@@ -1915,5 +1894,40 @@ finish:
 
     return 0;
 }
+
+uint8 PPU::VBlankON() { return data[0] & 0x80; };	//Generate VBlank NMI
+uint8 PPU::Sprite16() { return data[0] & 0x20; };	//Sprites 8x16/8x8
+uint8 PPU::BGAdrHI() { return data[0] & 0x10; };	//BG pattern adr $0000/$1000
+uint8 PPU::SpAdrHI() { return data[0] & 0x08; };	//Sprite pattern adr $0000/$1000
+uint8 PPU::INC32() { return data[0] & 0x04; };	//auto increment 1/32
+
+uint8 PPU::SpriteON() { return data[1] & 0x10; };	//Show Sprite
+uint8 PPU::ScreenON() { return data[1] & 0x08; };	//Show screen
+uint8 PPU::PPUON() { return data[1] & 0x18; };	//PPU should operate
+uint8 PPU::GRAYSCALE() { return data[1] & 0x01; };	//Grayscale (AND palette entries with 0x30)
+
+uint8 PPU::SpriteLeft8() { return data[1] & 0x04; };
+uint8 PPU::BGLeft8() { return data[1] & 0x02;} ;
+
+uint8 PPU::Status() { return data[2]; };
+void PPU::updateStatus(uint8 s) { data[2] = s; };
+
+uint8 PPU::READPAL(int ofs) { return PALRAM[ofs] & (GRAYSCALE() ? 0x30 : 0xFF); };
+uint8 PPU::READUPAL(int ofs) { return UPALRAM[ofs] & (GRAYSCALE() ? 0x30 : 0xFF); };
+
+uint8* PPU::MMC5SPRVRAMADR(int V) { return &(fceu->cart.MMC5SPRVPage[V >> 10][V]); };
+uint8* PPU::VRAMADR(int V) { return &(fceu->cart.VPage[V >> 10][V]); };
+
+uint8 PPU::Read(uint32 A) { return (*FFCEUX_PPURead)(A); };
+void PPU::Write(uint32 A, uint8 V) { FFCEUX_PPUWrite ? (*FFCEUX_PPUWrite)(A, V) : Write_Default(A, V); };
+
+int PPU::GETLASTPIXEL() { return fceu->PAL ? ((fceu->x6502.timestamp() * 48 - linestartts) / 15) : ((fceu->x6502.timestamp() * 48 - linestartts) >> 4); };
+
+uint8 PPU::ANull(uint32 A) { return(fceu->x6502.DB()); };
+void PPU::BNull(uint32 A, uint8 V) {};
+void PPU::BRAML(uint32 A, uint8 V) { fceu->RAM[A] = V; };
+void PPU::BRAMH(uint32 A, uint8 V) { fceu->RAM[A & 0x7FF] = V; };
+uint8 PPU::ARAML(uint32 A) { return fceu->RAM[A]; };
+uint8 PPU::ARAMH(uint32 A) { return fceu->RAM[A & 0x7FF]; };
 
 } // namespace fceu

@@ -12,14 +12,8 @@
 #include "utils/general_obj.h"
 #include "utils/memory_obj.h"
 
-#include "cart_obj.h"
-#include "handler_obj.h"
-#include "input_obj.h"
-#include "nsf_obj.h"
-#include "palette_obj.h"
 #include "state_obj.h"
 #include "video_obj.h"
-#include "x6502_obj.h"
 
 #ifdef _MSC_VER
 #define FASTCALL __fastcall
@@ -254,18 +248,12 @@ typedef struct {
   int cdloggerVideoDataSize;
 } LOGGER;
 
-class PPU;
-
-typedef uint8 (FASTCALL *ppureadfunc)(PPU* ppu, uint32 A);
-typedef void (*ppuwritefunc)(PPU* ppu, uint32 A, uint8 V);
-
 class FCEU;
 
 class PPU {
-  friend class Cart;
   public:
     // Constructor.
-    PPU(uint8 PAL, LOGGER logger) : PAL(PAL), gNoBGFillColor(0xFF), new_ppu_reset(false), idleSynch(1),
+    PPU(LOGGER logger) : gNoBGFillColor(0xFF), new_ppu_reset(false), idleSynch(1),
         ppudead(1), kook(0), fceuindbg(0), maxsprites(8), rendercount(-1), vromreadcount(-1),
         undefinedvromcount(-1), LogAddress(-1), rendersprites(true), renderbg(true),
         bgdata(this), logger(logger) {
@@ -378,51 +366,51 @@ class PPU {
 
     void ResetHooks() { FFCEUX_PPURead = &Read_Default_; }
 
-    inline uint8 VBlankON() { return data[0] & 0x80; };	//Generate VBlank NMI
-    inline uint8 Sprite16() { return data[0] & 0x20; };	//Sprites 8x16/8x8
-    inline uint8 BGAdrHI() { return data[0] & 0x10; };	//BG pattern adr $0000/$1000
-    inline uint8 SpAdrHI() { return data[0] & 0x08; };	//Sprite pattern adr $0000/$1000
-    inline uint8 INC32() { return data[0] & 0x04; };	//auto increment 1/32
+    uint8 VBlankON();	//Generate VBlank NMI
+    uint8 Sprite16();	//Sprites 8x16/8x8
+    uint8 BGAdrHI();	//BG pattern adr $0000/$1000
+    uint8 SpAdrHI();	//Sprite pattern adr $0000/$1000
+    uint8 INC32();	//auto increment 1/32
 
-    inline uint8 SpriteON() { return data[1] & 0x10; };	//Show Sprite
-    inline uint8 ScreenON() { return data[1] & 0x08; };	//Show screen
-    inline uint8 PPUON() { return data[1] & 0x18; };	//PPU should operate
-    inline uint8 GRAYSCALE() { return data[1] & 0x01; };	//Grayscale (AND palette entries with 0x30)
+    uint8 SpriteON();	//Show Sprite
+    uint8 ScreenON();	//Show screen
+    uint8 PPUON();	//PPU should operate
+    uint8 GRAYSCALE();	//Grayscale (AND palette entries with 0x30)
 
-    inline uint8 SpriteLeft8() { return data[1] & 0x04; };
-    inline uint8 BGLeft8() { return data[1] & 0x02;} ;
+    uint8 SpriteLeft8();
+    uint8 BGLeft8();
 
-    inline uint8 Status() { return data[2]; };
-    inline void updateStatus(uint8 s) { data[2] = s; };
+    uint8 Status();
+    void updateStatus(uint8 s);
 
-    inline uint8 READPAL(int ofs) { return PALRAM[ofs] & (GRAYSCALE() ? 0x30 : 0xFF); };
-    inline uint8 READUPAL(int ofs) { return UPALRAM[ofs] & (GRAYSCALE() ? 0x30 : 0xFF); };
+    uint8 READPAL(int ofs);
+    uint8 READUPAL(int ofs);
 
-    inline uint8* MMC5SPRVRAMADR(int V) { return &(cart->MMC5SPRVPage[V >> 10][V]); };
-    inline uint8* VRAMADR(int V) { return &(cart->VPage[V >> 10][V]); };
+    uint8* MMC5SPRVRAMADR(int V);
+    uint8* VRAMADR(int V);
 
-    inline uint8 Read(uint32 A) { return (*FFCEUX_PPURead)(A); };
-    inline void Write(uint32 A, uint8 V) { FFCEUX_PPUWrite ? (*FFCEUX_PPUWrite)(A, V) : Write_Default(A, V); };
+    uint8 Read(uint32 A);
+    void Write(uint32 A, uint8 V);
 
-    inline int GETLASTPIXEL() { return PAL ? ((x6502->timestamp() * 48 - linestartts) / 15) : ((x6502->timestamp() * 48 - linestartts) >> 4); };
+    int GETLASTPIXEL();
 
-    readfunc ANull_ = [this](uint32 A) { return(this->x6502->DB()); };
-    writefunc BNull_ = [this](uint32 A, uint8 V) {};
-    writefunc BRAML_ = [this](uint32 A, uint8 V) { (*(this->RAM))[A] = V; };
-    writefunc BRAMH_ = [this](uint32 A, uint8 V) { (*(this->RAM))[A & 0x7FF] = V; };
-    readfunc  ARAML_ = [this](uint32 A) { return (*(this->RAM))[A]; };
-    readfunc ARAMH_ = [this](uint32 A) { return (*(this->RAM))[A & 0x7FF]; };
+    uint8 ANull(uint32 A);
+    void BNull(uint32 A, uint8 V);
+    void BRAML(uint32 A, uint8 V);
+    void BRAMH(uint32 A, uint8 V);
+    uint8 ARAML(uint32 A);
+    uint8 ARAMH(uint32 A);
+
+    readfunc ANull_ = [this](uint32 A) { return ANull(A); };
+    writefunc BNull_ = [this](uint32 A, uint8 V) { BNull(A, V); };
+    writefunc BRAML_ = [this](uint32 A, uint8 V) { BRAML(A, V); };
+    writefunc BRAMH_ = [this](uint32 A, uint8 V) { BRAMH(A, V); };
+    readfunc ARAML_ = [this](uint32 A) { return ARAML(A); };
+    readfunc ARAMH_ = [this](uint32 A) { return ARAMH(A); };
 
   private:
     // Members.
     static BITREVLUT<uint8, 8> bitrevlut;
-
-    Handler* handler;
-    Input* input;
-    Cart* cart;
-
-    X6502* x6502;
-    uint8** RAM;
 
     bool overclock_enabled;
     bool overclocking;
@@ -432,12 +420,7 @@ class PPU {
     int postrenderscanlines;
     int vblankscanlines;
 
-    FCEUGI* GameInfo;
-
-    FCEUS* FSettings;
-
     int dendy;
-    uint8 PAL;
 
     //mbg 6/23/08
     //make the no-bg fill color configurable

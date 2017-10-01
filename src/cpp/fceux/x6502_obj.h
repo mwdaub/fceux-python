@@ -7,8 +7,6 @@
 
 #include "utils/general_obj.h"
 
-#include "sound_obj.h"
-
 #define N_FLAG  0x80
 #define V_FLAG  0x40
 #define U_FLAG  0x20
@@ -18,7 +16,7 @@
 #define Z_FLAG  0x02
 #define C_FLAG  0x01
 
-#define NTSC_CPU (dendy ? 1773447.467 : 1789772.7272727272727272)
+#define NTSC_CPU (fceu->dendy ? 1773447.467 : 1789772.7272727272727272)
 #define PAL_CPU  1662607.125
 
 #define FCEU_IQEXT      0x001
@@ -33,9 +31,13 @@
 
 namespace fceu {
 
+class FCEU;
+
 class X6502 {
   friend class FDS;
   public:
+    uint32 soundtimestamp;
+
     void Run(int32 cycles);
     void RunDebug(int32 cycles);
     void Debug(void (*CPUHook)(X6502 *),
@@ -73,7 +75,7 @@ class X6502 {
 
     std::function<void(int)> *MapIRQHook;
   private:
-    uint8** RAM;
+    FCEU* fceu;
 
     readfunc* ARead[0x10000];
     writefunc* BWrite[0x10000];
@@ -95,7 +97,6 @@ class X6502 {
     int preexec;      /* Pre-exec'ing for debug breakpoints. */
 
     uint32 timestamp_;
-    uint32 soundtimestamp;
 
     int StackAddrBackup;
 
@@ -121,7 +122,7 @@ class X6502 {
     inline uint8 RdMem(unsigned int A) { return(DB_=(*ARead[A])(A)); };
     inline void WrMem(unsigned int A, uint8 V) { (*BWrite[A])(A,V); };
     inline uint8 RdRAM(unsigned int A) { return(DB_=(*ARead[A])(A)); };
-    inline void WrRAM(unsigned int A, uint8 V) { (*RAM)[A]=V; };
+    void WrRAM(unsigned int A, uint8 V);
 };
 
 } // namespace fceu

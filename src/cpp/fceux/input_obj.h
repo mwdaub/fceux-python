@@ -8,10 +8,8 @@
 
 #include "utils/memory_obj.h"
 
-#include "handler_obj.h"
 #include "movie_obj.h"
 #include "vsuni_obj.h"
-#include "x6502_obj.h"
 
 namespace fceu {
 
@@ -66,10 +64,6 @@ class FCEU;
 
 class Input {
   public:
-    Input(Handler* handler) : handler_(handler) {
-      joyports[1].w = 1;
-    }
-
     JOYPORT* GetJoyport(int i) { return joyports+i; };
     void UpdateJoy(uint32 val) { memcpy(&val,joy,4); };
 
@@ -86,11 +80,6 @@ class Input {
 
   private:
     // Members.
-    Handler* handler_;
-    X6502* x6502_;
-
-    Movie* movie;
-
     FCEU* fceu;
 
     JOYPORT joyports[2];

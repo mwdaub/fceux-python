@@ -198,6 +198,18 @@ typedef struct {
 	int lowpass;
 } FCEUS;
 
+struct SFORMAT
+{
+	//a void* to the data or a void** to the data
+	void *v;
+
+	//size, plus flags
+	uint32 s;
+
+	//a string description of the element
+	char *desc;
+};
+
 } // namespace fceu
 
 #endif // define _FCEU_GIT_H_

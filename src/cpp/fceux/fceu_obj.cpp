@@ -67,9 +67,9 @@ void FCEU::ResetGameLoaded(void) {
 	EmulationPaused_ = 0; //mbg 5/8/08 - loading games while paused was bad news. maybe this fixes it
 	GameStateRestore = 0;
 	ppu.ResetGameLoaded();
-	if (GameExpSound.Kill)
-		(*GameExpSound.Kill)();
-	memset(&GameExpSound, 0, sizeof(GameExpSound));
+	if (sound.GameExpSound.Kill)
+		(*sound.GameExpSound.Kill)();
+	memset(&sound.GameExpSound, 0, sizeof(sound.GameExpSound));
 	x6502.ResetGameLoaded();
 	PAL &= 1;
 	palette.default_palette_selection = 0;
@@ -311,7 +311,7 @@ void FCEU::Emulate(uint8 **pXBuf, int32 **SoundBuf, int32 *SoundBufSize, int ski
 			memcpy(XBuf, XBackBuf, 256*256);
 			FCEU_PutImage();
 			*pXBuf = XBuf;
-			*SoundBuf = WaveFinal;
+			*SoundBuf = sound.WaveFinal;
 			*SoundBufSize = 0;
 			return;
 		}
@@ -326,7 +326,7 @@ void FCEU::Emulate(uint8 **pXBuf, int32 **SoundBuf, int32 *SoundBufSize, int ski
 	if (cart.GenieStage() != 1) cheat.ApplyPeriodicCheats();
 	r = ppu.Loop(skip);
 
-	if (skip != 2) ssize = FlushEmulateSound();  //If skip = 2 we are skipping sound processing
+	if (skip != 2) ssize = sound.FlushEmulateSound();  //If skip = 2 we are skipping sound processing
 
 	timestampbase += x6502.timestamp();
 	x6502.setTimestamp(0);
@@ -337,7 +337,7 @@ void FCEU::Emulate(uint8 **pXBuf, int32 **SoundBuf, int32 *SoundBufSize, int ski
 		*SoundBuf = 0;
 		*SoundBufSize = 0;
 	} else {
-		*SoundBuf = WaveFinal;
+		*SoundBuf = sound.WaveFinal;
 		*SoundBufSize = ssize;
 	}
 
@@ -362,7 +362,7 @@ void FCEU::ResetNES(void) {
 	movie.AddCommand(FCEUNPCMD_RESET);
 	if (!GameInfo) return;
 	(*GameInterface)(GI_RESETM2);
-	FCEUSND_Reset();
+	sound.Reset();
 	ppu.Reset();
 	x6502.Reset();
 
@@ -415,7 +415,7 @@ void FCEU::PowerNES(void) {
 
 	ppu.Power();
 	input.Initialize();
-	FCEUSND_Power();
+	sound.Power();
 
 	//Have the external game hardware "powered" after the internal NES stuff.  Needed for the NSF code and VS System code.
 	(*GameInterface)(GI_POWER);
@@ -460,7 +460,7 @@ void FCEU::ResetVidSys(void) {
 	normalscanlines = (dendy ? 290 : 240)+newppu; // use flag as number!
 	totalscanlines = normalscanlines + (overclock_enabled ? postrenderscanlines : 0);
 	ppu.SetVideoSystem(w || dendy);
-	SetSoundVariables();
+	sound.SetSoundVariables();
 }
 
 void FCEU::SetRenderedLines(int ntscf, int ntscl, int palf, int pall) {

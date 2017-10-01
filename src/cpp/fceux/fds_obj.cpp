@@ -5,7 +5,6 @@
 #include <cstring>
 
 #include "fceu_obj.h"
-#include "sound_obj.h"
 
 //	TODO:  Add code to put a delay in between the time a disk is inserted
 //	and the when it can be successfully read/written to.  This should
@@ -353,7 +352,7 @@ void FDS::RenderSound(void) {
 	int32 x;
 
 	start = FBC;
-	end = (SoundTimestamp() << 16) / soundtsinc;
+	end = (fceu->sound.SoundTimestamp() << 16) / fceu->sound.soundtsinc;
 	if (end <= start)
 		return;
 	FBC = end;
@@ -363,7 +362,7 @@ void FDS::RenderSound(void) {
 			uint32 t = FDSDoSound();
 			t += t >> 1;
 			t >>= 4;
-			Wave[x >> 4] += t; //(t>>2)-(t>>3); //>>3;
+			fceu->sound.Wave[x >> 4] += t; //(t>>2)-(t>>3); //>>3;
 		}
 }
 
@@ -371,12 +370,12 @@ void FDS::RenderSoundHQ(void) {
 	uint32 x; //mbg merge 7/17/06 - made this unsigned
 
 	if (!(SPSG[0x9] & 0x80))
-		for (x = FBC; x < SoundTimestamp(); x++) {
+		for (x = FBC; x < fceu->sound.SoundTimestamp(); x++) {
 			uint32 t = FDSDoSound();
 			t += t >> 1;
-			WaveHi[x] += t; //(t<<2)-(t<<1);
+			fceu->sound.WaveHi[x] += t; //(t<<2)-(t<<1);
 		}
-	FBC = SoundTimestamp();
+	FBC = fceu->sound.SoundTimestamp();
 }
 
 void FDS::HQSync(int32 ts) {
@@ -406,10 +405,10 @@ void FDS::FDS_ESI(void) {
 void FDS::FDSSoundReset(void) {
 	memset(&fdso, 0, sizeof(fdso));
 	FDS_ESI();
-	GameExpSound.HiSync = &HQSync_;
-	GameExpSound.HiFill = &RenderSoundHQ_;
-	GameExpSound.Fill = &FDSSound_;
-	GameExpSound.RChange = &FDS_ESI_;
+	fceu->sound.GameExpSound.HiSync = &HQSync_;
+	fceu->sound.GameExpSound.HiFill = &RenderSoundHQ_;
+	fceu->sound.GameExpSound.Fill = &FDSSound_;
+	fceu->sound.GameExpSound.RChange = &FDS_ESI_;
 }
 
 void FDS::FDSWrite(uint32 A, uint8 V) {

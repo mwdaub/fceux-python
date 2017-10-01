@@ -1,24 +1,6 @@
-/* FCE Ultra - NES/Famicom Emulator
- *
- * Copyright notice for this file:
- *  Copyright (C) 2002 Xodnizel
- *
- * This program is free software; you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation; either version 2 of the License, or
- * (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with this program; if not, write to the Free Software
- * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
- */
-
 #include "x6502_obj.h"
+
+#include "fceu_obj.h"
 
 namespace fceu {
 
@@ -399,13 +381,15 @@ void X6502::Run(int32 cycles) {
     if(MapIRQHook) (*MapIRQHook)(temp);
    
     if (!overclocking)
-      FCEU_SoundCPUHook(temp);
+      fceu->sound.SoundCPUHook(temp);
     PC_++;
     switch(b1) {
     #include "ops_obj.inc"
     }
   }
 }
+
+inline void X6502::WrRAM(unsigned int A, uint8 V) { fceu->RAM[A]=V; };
 
 //the opsize table is used to quickly grab the instruction sizes (in bytes)
 const uint8 opsize[256] = {

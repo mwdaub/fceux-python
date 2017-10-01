@@ -40,7 +40,6 @@ typedef struct {
 class FCEU;
 
 class Cart {
-  friend class PPU;
   public:
 
     readfunc CartBR_ = [this](uint32 A) { return CartBR(A); };

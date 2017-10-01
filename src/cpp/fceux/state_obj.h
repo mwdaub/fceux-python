@@ -3,6 +3,8 @@
 
 #include "types_obj.h"
 
+#include "emufile_obj.h"
+
 //indicates that the value is a multibyte integer that needs to be put in the correct byte order
 #define FCEUSTATE_RLSB            0x80000000
 
@@ -18,18 +20,6 @@ enum ENUM_SSLOADPARAMS
 {
 	SSLOADPARAM_NOBACKUP,
 	SSLOADPARAM_BACKUP,
-};
-
-struct SFORMAT
-{
-	//a void* to the data or a void** to the data
-	void *v;
-
-	//size, plus flags
-	uint32 s;
-
-	//a string description of the element
-	char *desc;
 };
 
 //tells the save system innards that we're loading the old format
